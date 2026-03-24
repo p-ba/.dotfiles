@@ -1,7 +1,33 @@
 vim.pack.add({ "https://github.com/folke/tokyonight.nvim" }) -- colorscheme
+vim.pack.add({
+    {
+        src = "https://github.com/nvim-treesitter/nvim-treesitter",
+        version = "main",
+    }
+})
+
+require("nvim-treesitter").setup({
+    install_dir = vim.fn.stdpath("data") .. "/site",
+})
+
+vim.api.nvim_create_autocmd("FileType", {
+    callback = function(args)
+        local buf = args.buf
+        local ft = vim.bo[buf].filetype
+        local lang = vim.treesitter.language.get_lang(ft)
+        if not lang or lang == "" then
+            return
+        end
+        if vim.treesitter.language.add(lang) then
+            vim.treesitter.start(buf, lang)
+        end
+    end,
+})
 
 if os.getenv("TERM_PROGRAM") == "Apple_Terminal" then
-    vim.cmd([[colorscheme catppuccin]])
+    pcall(function()
+        vim.cmd("colorscheme catppuccin")
+    end)
     vim.opt.termguicolors = false
 else
     local transparent = true
@@ -21,24 +47,3 @@ else
     })
     vim.cmd([[colorscheme tokyonight]])
 end
-
-vim.api.nvim_create_autocmd("VimEnter", {
-    once = true,
-    callback = function()
-        vim.pack.add({ "https://github.com/nvim-treesitter/nvim-treesitter" })
-        local treesitter = require("nvim-treesitter.configs")
-        treesitter.setup({
-            ensure_installed = { "c", "lua", "vim", "vimdoc", "query", "go", "javascript", "typescript", "html", "css", "scss" },
-            auto_install = true,
-            highlight = {
-                enable = true,
-            },
-            indent = {
-                enable = true,
-            },
-            modules = {},
-            sync_install = false,
-            ignore_install = {},
-        })
-    end,
-})

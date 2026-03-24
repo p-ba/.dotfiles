@@ -28,6 +28,11 @@ end, { silent = true, noremap = true })
 
 vim.pack.add({ "https://github.com/tpope/vim-fugitive" })
 vim.g.user_emmet_leader_key = "<C-x>"
+vim.g.user_emmet_settings = {
+    blade = {
+        extends = "html",
+    },
+}
 vim.pack.add({ "https://github.com/mattn/emmet-vim" })
 vim.pack.add({ "https://github.com/numToStr/Comment.nvim" })
 require("Comment").setup()

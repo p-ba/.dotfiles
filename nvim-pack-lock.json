@@ -2,79 +2,64 @@
   "plugins": {
     "Comment.nvim": {
       "rev": "e30b7f2008e52442154b66f7c519bfd2f1e32acb",
-      "src": "git@github.com:numToStr/Comment.nvim"
+      "src": "https://github.com/numToStr/Comment.nvim"
     },
     "LuaSnip": {
-      "rev": "de10d8414235b0a8cabfeba60d07c24304e71f5c",
-      "src": "git@github.com:L3MON4D3/LuaSnip"
-    },
-    "editorconfig-vim": {
-      "rev": "6a58b7c11f79c0e1d0f20533b3f42f2a11490cf8",
-      "src": "git@github.com:editorconfig/editorconfig-vim"
+      "rev": "dae4f5aaa3574bd0c2b9dd20fb9542a02c10471c",
+      "src": "https://github.com/L3MON4D3/LuaSnip"
     },
     "emmet-vim": {
-      "rev": "e98397144982d1e75b20d94d55a82de3ec8f648d",
-      "src": "git@github.com:mattn/emmet-vim"
+      "rev": "cc8b1a9f2241e087330195c76651c5f9d9519e2f",
+      "src": "https://github.com/mattn/emmet-vim"
     },
     "friendly-snippets": {
       "rev": "6cd7280adead7f586db6fccbd15d2cac7e2188b9",
       "src": "https://github.com/rafamadriz/friendly-snippets"
     },
     "mini.icons": {
-      "rev": "b8f6fa6f5a3fd0c56936252edcd691184e5aac0c",
-      "src": "git@github.com:echasnovski/mini.icons"
-    },
-    "mini.nvim": {
-      "rev": "8c40d95931cbe6138391af9180e59439ed2e69df",
-      "src": "https://github.com/nvim-mini/mini.nvim"
-    },
-    "mini.pick": {
-      "rev": "82ec629ca108c7b96b8b9bb733d235b39e137690",
-      "src": "git@github.com:echasnovski/mini.pick"
+      "rev": "5b9076dae1bfbe47ba4a14bc8b967cde0ab5d77e",
+      "src": "https://github.com/echasnovski/mini.icons"
     },
     "nvim-lspconfig": {
-      "rev": "276ce3bc878243dc63c32b75790c4296d11848f6",
-      "src": "git@github.com:neovim/nvim-lspconfig"
+      "rev": "dd261ad5266ab5bbec249d21efeceda98ff3e1a6",
+      "src": "https://github.com/neovim/nvim-lspconfig"
     },
     "nvim-treesitter": {
-      "rev": "42fc28ba918343ebfd5565147a42a26580579482",
-      "src": "git@github.com:nvim-treesitter/nvim-treesitter"
+      "rev": "2f5d4c3f3c675962242096bcc8e586d76dd72eb2",
+      "src": "https://github.com/nvim-treesitter/nvim-treesitter",
+      "version": "'main'"
     },
     "oil.nvim": {
-      "rev": "f55b25e493a7df76371cfadd0ded5004cb9cd48a",
+      "rev": "0fcc83805ad11cf714a949c98c605ed717e0b83e",
       "src": "https://github.com/stevearc/oil.nvim"
     },
     "plenary.nvim": {
       "rev": "b9fd5226c2f76c951fc8ed5923d85e4de065e509",
-      "src": "git@github.com:nvim-lua/plenary.nvim"
+      "src": "https://github.com/nvim-lua/plenary.nvim"
     },
     "render-markdown.nvim": {
-      "rev": "48b4175dbca8439d30c1f52231cbe5a712c8f9d9",
+      "rev": "e3c18ddd27a853f85a6f513a864cf4f2982b9f26",
       "src": "https://github.com/MeanderingProgrammer/render-markdown.nvim"
     },
     "snacks.nvim": {
-      "rev": "bc0630e43be5699bb94dadc302c0d21615421d93",
-      "src": "git@github.com:folke/snacks.nvim"
-    },
-    "supermaven-nvim": {
-      "rev": "07d20fce48a5629686aefb0a7cd4b25e33947d50",
-      "src": "git@github.com:supermaven-inc/supermaven-nvim"
+      "rev": "a049339328e2599ad6e85a69fa034ac501e921b2",
+      "src": "https://github.com/folke/snacks.nvim"
     },
     "tokyonight.nvim": {
-      "rev": "057ef5d260c1931f1dffd0f052c685dcd14100a3",
-      "src": "git@github.com:folke/tokyonight.nvim"
+      "rev": "5da1b76e64daf4c5d410f06bcb6b9cb640da7dfd",
+      "src": "https://github.com/folke/tokyonight.nvim"
     },
     "undotree": {
-      "rev": "28f2f54a34baff90ea6f4a735ef1813ad875c743",
-      "src": "git@github.com:mbbill/undotree"
+      "rev": "6fa6b57cda8459e1e4b2ca34df702f55242f4e4d",
+      "src": "https://github.com/mbbill/undotree"
     },
     "vim-fugitive": {
-      "rev": "61b51c09b7c9ce04e821f6cf76ea4f6f903e3cf4",
-      "src": "git@github.com:tpope/vim-fugitive"
+      "rev": "3b753cf8c6a4dcde6edee8827d464ba9b8c4a6f0",
+      "src": "https://github.com/tpope/vim-fugitive"
     },
     "vim-vinegar": {
       "rev": "bb1bcddf43cfebe05eb565a84ab069b357d0b3d6",
-      "src": "git@github.com:tpope/vim-vinegar"
+      "src": "https://github.com/tpope/vim-vinegar"
     }
   }
 }

@@ -85,10 +85,6 @@ vim.opt.updatetime = 50
 
 vim.opt.colorcolumn = ""
 
--- Better split behavior
-vim.opt.splitbelow = true
-vim.opt.splitright = true
-
 -- Better search experience
 vim.opt.showmatch = true
 vim.opt.matchtime = 1
