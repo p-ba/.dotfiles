@@ -14,6 +14,11 @@ vim.opt.guicursor = "n-v-c-i:block"
 vim.opt.winborder = "rounded"
 vim.g.editorconfig = true
 
+-- Align <?php / ?> with surrounding HTML (see :help php-indent, PHP_outdentphpescape).
+vim.g.PHP_outdentphpescape = 0
+-- Unused when |indentexpr| is tree-sitter (see lua/php_indent.lua); kept for Vim fallback.
+vim.g.PHP_autoformatcomment = 0
+
 vim.diagnostic.config({
     virtual_text = true
 })
