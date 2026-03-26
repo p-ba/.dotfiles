@@ -16,3 +16,9 @@ local function copy_path_to_clipboard()
     vim.notify('Copied "' .. path .. '" to the clipboard!')
 end
 vim.keymap.set("n", "<Leader>c", copy_path_to_clipboard, { noremap = true, silent = true })
+
+-- Lazy plugin-backed keymaps.
+require("picker").setup_keymaps()
+vim.keymap.set("n", "-", function()
+    require("oil_config").open()
+end, { desc = "Open parent directory" })

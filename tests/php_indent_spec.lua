@@ -51,7 +51,8 @@ package.loaded["nvim-treesitter.indent"] = {
 -- Minimal `vim` surface needed by `lua/php_indent.lua`.
 local v = _G.vim or {}
 _G.vim = v
-v.trim = v.trim or trim
+-- Force a deterministic surface even when run inside Neovim.
+v.trim = trim
 
 v.api = v.api or {}
 v.api.nvim_get_current_buf = function()
@@ -68,18 +69,17 @@ v.api.nvim_buf_get_lines = function(_, start, end_, _)
 end
 
 v.fn = v.fn or {}
-v.fn.shiftwidth = v.fn.shiftwidth or function()
+v.fn.shiftwidth = function()
   return shiftwidth
 end
 
-v.bo = v.bo or {}
-v.bo.filetype = v.bo.filetype or "php"
+v.bo.filetype = "php"
 
-v.fn.indent = v.fn.indent or function(lnum)
+v.fn.indent = function(lnum)
   return indent_column(buffer_lines[lnum] or "", shiftwidth)
 end
 
-v.fn.prevnonblank = v.fn.prevnonblank or function(lnum)
+v.fn.prevnonblank = function(lnum)
   for i = lnum, 1, -1 do
     local line = buffer_lines[i] or ""
     if not line:match("^%s*$") then
@@ -378,6 +378,195 @@ run_buffer_case(
   {
     [4] = 4, -- `]` aligns with `\t'' => [`
     [5] = 0, -- `];` aligns with `$cats = [`
+  }
+)
+
+-- PHP-only file: `]);` should dedent like `];` (common in function/method calls).
+-- The next statement must not be indented under `]);`.
+run_buffer_case(
+  "php-only: method call array close `]);` + following return view array `]);`",
+  {
+    "<?php",
+    "$payment->update([",
+    "    'request_payload' => [",
+    "        'merchant_parameters' => $merchantParams,",
+    "        'signature_version' => $payload['Ds_SignatureVersion'],",
+    "    ],",
+    "]);",
+    "return view('payments.redsys-redirect', [",
+    "    'gatewayUrl' => $redsys->getGatewayUrl(),",
+    "    'payload' => $payload,",
+    "]);",
+  },
+  {
+    -- Simulate Treesitter over-indenting closing `]);` and the next statement during `gg=G`.
+    [7] = 4,
+    [8] = 4,
+    [11] = 4,
+  },
+  {
+    [7] = 0, -- `]);` aligns with `$payment->update([`
+    [8] = 0, -- next statement not nested under `]);`
+    [11] = 0, -- `]);` aligns with `return view(..., [`
+  }
+)
+
+run_buffer_case(
+  "php-only: multiline call arg array `],` + closing `);` align with openers",
+  {
+    "<?php",
+    "$euCredential = UpsCredential::query()->updateOrCreate(",
+    "    ['name' => 'UPS EU'],",
+    "    [",
+    "        'is_active' => true,",
+    "        'environment' => 'sandbox',",
+    "        'client_id' => $clientId !== '' ? $clientId : null,",
+    "        'client_secret' => $clientSecret !== '' ? $clientSecret : null,",
+    "        ],",
+    "        );",
+  },
+  {
+    -- Simulate Treesitter over-indenting both closing lines.
+    [9] = 8,
+    [10] = 8,
+  },
+  {
+    [9] = 4, -- `],` aligns with line containing the second arg `[`
+    [10] = 0, -- `);` aligns with `updateOrCreate(`
+  }
+)
+
+run_buffer_case(
+  "php-only: multiline if conditions closing `) {` aligns with `if (`",
+  {
+    "<?php",
+    "if (",
+    "    ! Schema::hasTable('ups_credentials')",
+    "        || ! Schema::hasTable('shipping_countries')",
+    "            || ! Schema::hasTable('shipping_countries_ups_credentials')",
+    "                ) {",
+    "                    return;",
+    "}",
+  },
+  {
+    -- Simulate Treesitter drifting the closing `) {` and the body.
+    [6] = 16,
+    [7] = 20,
+    [8] = 0,
+  },
+  {
+    [6] = 0, -- `) {` aligns with `if (`
+    [7] = 4, -- body is one shiftwidth under `if (`
+    [8] = 0, -- closing brace aligns with `if (`
+  }
+)
+
+run_buffer_case(
+  "php-only: multiline logical operator lines do not staircase",
+  {
+    "<?php",
+    "if (",
+    "    ! Schema::hasTable('ups_credentials')",
+    "        || ! Schema::hasTable('shipping_countries')",
+    "            || ! Schema::hasTable('shipping_countries_ups_credentials')",
+    ") {",
+    "    return;",
+    "}",
+  },
+  {
+    -- Simulate Treesitter drifting continuation lines to the right.
+    [4] = 8,
+    [5] = 12,
+    [8] = 0,
+  },
+  {
+    [3] = 4,
+    [4] = 4, -- `||` line aligns with first condition line
+    [5] = 4, -- next `||` line keeps same alignment
+    [6] = 0, -- closing `)` aligns with `if (`
+    [7] = 4,
+    [8] = 0,
+  }
+)
+
+run_buffer_case(
+  "php-only: multiline ternary `?` and `:` align under condition line",
+  {
+    "<?php",
+    "$targetCredentialId = in_array($iso2, self::EU_COUNTRY_ISO2, true)",
+    "? (int) $euCredential->getKey()",
+    ": (int) $rowCredential->getKey();",
+  },
+  {
+    -- Simulate Treesitter under-indenting ternary operator lines.
+    [3] = 0,
+    [4] = 0,
+  },
+  {
+    [3] = 4,
+    [4] = 4,
+  }
+)
+
+run_buffer_case(
+  "php-only: statement after multiline ternary dedents",
+  {
+    "<?php",
+    "$targetCredentialId = in_array($iso2, self::EU_COUNTRY_ISO2, true)",
+    "    ? (int) $euCredential->getKey()",
+    "    : (int) $rowCredential->getKey();",
+    "    DB::table('shipping_countries_ups_credentials')->updateOrInsert(",
+  },
+  {
+    -- Simulate Treesitter carrying ternary indent onto next statement.
+    [5] = 4,
+  },
+  {
+    [5] = 0, -- should align with `$targetCredentialId = ...`
+  }
+)
+
+run_buffer_case(
+  "php-only: multiline chained method calls keep `->` indentation level",
+  {
+    "<?php",
+    "DB::table('shipping_countries_ups_credentials')",
+    "    ->where('shipping_country_id', (int) $shippingCountry->getKey())",
+    "->whereIn('ups_credential_id', [(int) $euCredential->getKey(), (int) $rowCredential->getKey()])",
+    "->where('ups_credential_id', '!=', $targetCredentialId)",
+    "->delete();",
+  },
+  {
+    -- Simulate Treesitter dropping chain indentation after first method.
+    [4] = 0,
+    [5] = 0,
+    [6] = 0,
+  },
+  {
+    [3] = 4,
+    [4] = 4,
+    [5] = 4,
+    [6] = 4,
+  }
+)
+
+run_buffer_case(
+  "php-only: line after chained method terminator dedents to chain base",
+  {
+    "<?php",
+    "$shippingCountries = ShippingCountry::query()",
+    "    ->with('country:id,iso2')",
+    "    ->get();",
+    "    foreach ($shippingCountries as $shippingCountry) {",
+  },
+  {
+    -- Simulate Treesitter keeping chain indent on the next statement.
+    [5] = 4,
+  },
+  {
+    [3] = 4,
+    [4] = 4,
+    [5] = 0, -- `foreach` aligns with `$shippingCountries = ...`
   }
 )
 

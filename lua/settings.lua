@@ -1,9 +1,12 @@
 if vim.g.neovide then
-    vim.g.neovide_transparency = 0.8
+    vim.g.neovide_opacity = 0.9
     vim.g.transparency = 0.8
+    vim.o.background = "dark"
+else
+    require('vim._core.ui2').enable({})
 end
 vim.opt.linespace = 12
-vim.o.guifont = "Fira Code,Menlo:h16"
+vim.o.guifont = "JetBrainsMono Nerd Font:h16"
 vim.g.netrw_liststyle = 3
 vim.g.mapleader = " "
 vim.opt.nu = true
@@ -22,7 +25,6 @@ vim.g.PHP_autoformatcomment = 0
 vim.diagnostic.config({
     virtual_text = true
 })
-require('vim._core.ui2').enable({})
 
 vim.api.nvim_create_user_command('TrimWhitespace', function()
     local save_cursor = vim.fn.getpos(".")

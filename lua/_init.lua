@@ -1,3 +1,1 @@
-vim.pack.add({
-    "https://github.com/nvim-lua/plenary.nvim", -- common library
-})
+-- Reserved for "always-on" bits. Keep empty to avoid eager work.
