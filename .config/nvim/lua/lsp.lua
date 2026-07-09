@@ -28,6 +28,12 @@ function M.setup()
         capabilities = capabilities,
     })
 
+    vim.lsp.config("sourcekit", {
+        cmd = { "sourcekit-lsp" },
+        filetypes = { "swift", "objc", "objcpp", "c", "cpp" },
+        root_markers = { "Package.swift", "compile_commands.json", ".git" },
+    })
+
     vim.lsp.config("lua_ls", {
         settings = {
             Lua = {
@@ -56,6 +62,9 @@ function M.setup()
             if not client then
                 return
             end
+
+            client.server_capabilities.semanticTokensProvider = nil
+
             for _, lsp in ipairs(format_on_save) do
                 if lsp == client.name and client:supports_method("textDocument/formatting") then
                     vim.api.nvim_create_autocmd("BufWritePre", {

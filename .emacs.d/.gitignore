@@ -1,0 +1,6 @@
+*.elc
+/*
+!/.gitignore
+!/init.el
+!/early-init.el
+!/my-packages

@@ -1,2 +1,44 @@
-/undodir/
-lua/_local_lsp.lua
+# macOS
+.DS_Store
+
+# Secrets / local overrides
+.env
+.env.*
+*.secret
+*.local
+
+# Runtime/cache directories
+.cache/
+node_modules/
+*.log
+
+# opencode runtime/dependencies
+.config/opencode/node_modules/
+.config/opencode/**/node_modules/
+.config/opencode/package-lock.json
+
+# tmux plugin installs
+.tmux/plugins/
+
+# pi runtime/secrets; keep settings/config-like files explicit with git add -f if needed
+.pi/agent/auth.json
+.pi/agent/sessions/
+.pi/agent/npm/
+.pi/context-mode/sessions/
+.pi/context-mode/content/
+
+# Emacs runtime/build outputs; .emacs.d/.gitignore further narrows tracked files
+.emacs.d/eln-cache/
+.emacs.d/elpa/
+.emacs.d/tree-sitter/
+.emacs.d/auto-save-list/
+.emacs.d/autosave/
+.emacs.d/history/
+.emacs.d/lsp-cache/
+.emacs.d/places.eld
+.emacs.d/recentf
+.emacs.d/tramp
+.emacs.d/transient/
+.emacs.d/undo/
+.emacs.d/url/
+.emacs.d/var/

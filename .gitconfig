@@ -1,0 +1,36 @@
+# Personal identity and machine-specific credentials belong in ~/.gitconfig.local.
+[include]
+	path = ~/.gitconfig.local
+[core]
+	editor = nvim
+	excludesfile = ~/.gitignore
+[diff]
+    tool = smerge
+	algorithm = histogram
+	colorMoved = plain
+[merge]
+    tool = smerge
+[commit]
+	gpgsign = true
+	verbose = true
+[pull]
+	ff = only
+[init]
+	defaultBranch = main
+[push]
+	default = simple
+	autoSetupRemote = true
+	followTags = true
+[help]
+	autocorrect = prompt
+[rebase]
+	autoStash = true
+[http]
+	postBuffer = 524288000
+	version = HTTP/2
+[url "git@github.com:"]
+	insteadOf = https://github.com/
+[protocol "file"]
+	allow = always
+[gpg]
+	program = /opt/homebrew/bin/gpg

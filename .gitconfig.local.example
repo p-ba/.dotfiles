@@ -1,0 +1,6 @@
+# Copy this file to ~/.gitconfig.local (outside this repository) and fill in
+# machine- or person-specific values. Never commit the copied file.
+[user]
+	name = Your Name
+	email = you@example.com
+	signingkey = YOUR_GPG_KEY_ID

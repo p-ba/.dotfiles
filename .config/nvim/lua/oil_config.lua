@@ -2,6 +2,19 @@ local M = {}
 
 local did_setup = false
 local did_icons = false
+local always_hidden_names = {
+    [".DS_Store"] = true,
+    [".build"] = true,
+    [".cache"] = true,
+    [".direnv"] = true,
+    [".git"] = true,
+    [".hg"] = true,
+    [".jj"] = true,
+    [".swiftpm"] = true,
+    [".svn"] = true,
+    ["build"] = true,
+    ["node_modules"] = true,
+}
 
 local function setup_icons()
     if did_icons then
@@ -34,7 +47,13 @@ function M.setup()
         skip_confirm_for_simple_edits = true,
         columns = {
             "icon",
-        }
+        },
+        view_options = {
+            show_hidden = true,
+            is_always_hidden = function(name, _)
+                return always_hidden_names[name] == true
+            end,
+        },
     })
 end
 

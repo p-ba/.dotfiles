@@ -54,6 +54,9 @@ function M.setup_keymaps()
     vim.keymap.set({ "n" }, "<leader>e", function()
         get_snacks().picker.recent()
     end, { silent = true, noremap = true })
+    vim.keymap.set({ "n" }, "<leader>/", function()
+        get_snacks().explorer()
+    end, { silent = true, noremap = true })
 end
 
 return M

@@ -16,6 +16,9 @@ vim.opt.grepprg = "rg --vimgrep -U"
 vim.opt.guicursor = "n-v-c-i:block"
 vim.opt.winborder = "rounded"
 vim.g.editorconfig = true
+vim.opt.wrap = true
+vim.opt.linebreak = true
+vim.opt.breakindent = true
 
 -- Align <?php / ?> with surrounding HTML (see :help php-indent, PHP_outdentphpescape).
 vim.g.PHP_outdentphpescape = 0
@@ -69,7 +72,6 @@ vim.opt.backspace = 'indent,eol,start'
 vim.opt.completeopt = { "menuone", "noselect", "noinsert", "preview" }
 vim.opt.shortmess:append "c"
 
-vim.opt.wrap = false
 vim.opt.hlsearch = false
 vim.opt.incsearch = true
 vim.opt.ignorecase = true
