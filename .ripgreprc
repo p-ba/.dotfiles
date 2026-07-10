@@ -1,0 +1,42 @@
+# Search dotfiles and dot-directories by default.
+--no-ignore
+--max-columns=200
+
+# VCS internals.
+--glob=!.git/**
+--glob=!.hg/**
+--glob=!.svn/**
+
+# Minified/generated frontend artifacts elsewhere.
+--glob=!**/*.min.{js,jsx,mjs,cjs,ts,tsx,css}
+--glob=!**/*.map
+
+
+# node_modules specific
+--glob=!**/node_modules/**/*.md
+--glob=!**/node_modules/**/package.{json,lock}
+
+# Laravel
+--glob=!**/public/js/**/*
+
+# Build and cache directories.
+--glob=!**/dist/**
+--glob=!**/build/**
+--glob=!**/out/**
+--glob=!**/coverage/**
+--glob=!**/target/**
+--glob=!**/.next/**
+--glob=!**/.nuxt/**
+--glob=!**/.svelte-kit/**
+--glob=!**/.turbo/**
+--glob=!**/.cache/**
+--glob=!**/.parcel-cache/**
+--glob=!**/.pytest_cache/**
+--glob=!**/__pycache__/**
+
+# Binary/media/archive files.
+--glob=!**/*.{png,jpg,jpeg,gif,webp,avif,ico,icns,bmp,tiff}
+--glob=!**/*.{mp3,mp4,m4a,m4v,mov,avi,mkv,webm,wav,flac,ogg}
+--glob=!**/*.{woff,woff2,ttf,otf,eot}
+--glob=!**/*.{pdf,zip,tar,tgz,gz,bz2,xz,7z,rar,dmg,iso}
+--glob=!**/*.{sqlite,sqlite3,db}

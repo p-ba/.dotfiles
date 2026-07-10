@@ -1,4 +1,4 @@
 interface:
   display_name: "Architect"
-  short_description: "Plan, delegate, review, and iterate"
-  default_prompt: "Use $architect to plan and deliver this complex feature with a strong main architect and bounded development subagents."
+  short_description: "Plan/review in main; delegate all delivery"
+  default_prompt: "Use $architect: keep the main thread as planner and reviewer, and delegate all implementation, fixes, and automated tests to bounded subagents."

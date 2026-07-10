@@ -102,6 +102,7 @@ LINKS=(
   ".zshenv:$HOME/.zshenv"
   ".bashrc:$HOME/.bashrc"
   ".profile:$HOME/.profile"
+  ".ripgreprc:$HOME/.ripgreprc"
   ".gitconfig:$HOME/.gitconfig"
   ".agents/skills/architect:$HOME/.agents/skills/architect"
 )

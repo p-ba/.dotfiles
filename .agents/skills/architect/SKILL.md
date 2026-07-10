@@ -5,7 +5,17 @@ description: "Plan and deliver complex software features through an architect-le
 
 # Architect
 
-Run complex feature work as an architect-led workflow. The main agent owns the plan, delegates bounded work, reviews every change, and remains the single source of truth.
+Run complex feature work as an architect-led workflow. The main agent owns planning, orchestration, and review; development subagents own all implementation, fixes, and automated validation. The main agent remains the single source of truth.
+
+## Main-thread boundary
+
+The main architect session is a planner and reviewer, not an implementer.
+
+- Do **not** directly edit implementation, configuration, test, or documentation files in the main architect session.
+- Do **not** run the implementation test suite in the main architect session. Delegate automated validation to a test subagent.
+- Use the main session only to clarify requirements, inspect and synthesize evidence, define slices, launch and steer workers, inspect actual diffs/results, review work, and decide which findings to accept.
+- Delegate every implementation slice, accepted fix, and automated test to a subagent, even when the slice is small or tightly coupled. Serialize tightly coupled slices rather than implementing them in the main session.
+- The only exception is when the user explicitly asks the main agent not to delegate, or subagent tooling is unavailable; state the exception in the final response.
 
 ## Model policy
 
@@ -18,7 +28,8 @@ Run complex feature work as an architect-led workflow. The main agent owns the p
 Use the generic Agent types:
 
 - `Explore` for read-only reconnaissance and locating relevant code.
-- `general-purpose` for bounded implementation, testing, or accepted review fixes.
+- `general-purpose` for every bounded implementation slice and every accepted review fix.
+- `general-purpose` for automated validation with an explicit no-edit instruction.
 - `Plan` only when a separate architecture plan is genuinely useful; the main architect still makes final decisions.
 
 For Luna workers, pass `model: "openai-codex/gpt-5.6-luna"` and `thinking: "medium"` when supported.
@@ -36,14 +47,14 @@ Every code-producing prompt must state:
 ## Workflow
 
 1. Clarify only when ambiguity prevents safe implementation; otherwise make reasonable assumptions.
-2. Inspect enough of the repository to identify architecture, conventions, tests, commands, and change boundaries.
-3. Write a concrete plan with slices, ownership, validation, review criteria, and safe parallelism.
-4. Delegate only when it reduces latency or protects main-thread context. Handle small or tightly coupled work directly.
+2. Delegate reconnaissance as needed, then inspect and synthesize enough evidence to identify architecture, conventions, tests, commands, and change boundaries.
+3. Write a concrete plan with implementation slices, explicit subagent ownership, validation assignments, review criteria, and safe parallelism.
+4. Delegate every implementation slice to `general-purpose` workers. Launch independent slices in parallel; serialize overlapping or tightly coupled slices.
 5. Verify actual worker changes; do not rely only on summaries.
-6. Run focused validation, then broader checks when justified.
+6. Delegate focused automated validation, then broader checks when justified, to dedicated no-edit workers.
 7. Review correctness, tests, architecture, regressions, security, performance, and maintainability in the main thread.
-8. Triage each review remark: accept and fix it, or reject it with a brief reason.
-9. Repeat bounded fixes, validation, and review while accepted remarks remain, up to 10 review/fix iterations.
+8. Triage each review remark: delegate an accepted remark as a bounded fix, or reject it with a brief reason.
+9. Repeat delegated fixes, delegated validation, and main-thread review while accepted remarks remain, up to 10 review/fix iterations.
 10. Stop when no accepted unresolved remarks remain or after iteration 10. Report anything still unresolved.
 
 Count an iteration only when reviewing concrete implementation or fix work. Planning, exploration, validation-only, and completion-only work do not count.
@@ -53,7 +64,7 @@ Count an iteration only when reviewing concrete implementation or fix work. Plan
 Implementation:
 
 ```text
-You are an implementation worker. Work only on this bounded slice:
+You are an implementation worker. The main architect is planning and reviewing; you own this bounded implementation slice:
 <slice, files, behavior, constraints>
 
 Follow repository instructions and avoid unrelated edits. Run focused validation. Return changed files, validation results, and unresolved risks.
@@ -62,7 +73,7 @@ Follow repository instructions and avoid unrelated edits. Run focused validation
 Fix:
 
 ```text
-You are a fix worker. Resolve only these accepted review remarks:
+You are a fix worker. The main architect accepted these remarks; resolve only them:
 <remarks and owned files>
 
 Avoid unrelated edits. Run focused validation. Return changed files, validation results, and anything unresolved.
@@ -71,10 +82,10 @@ Avoid unrelated edits. Run focused validation. Return changed files, validation 
 Validation:
 
 ```text
-Validate only this behavior with read-only checks:
+You are an automated validation worker. Validate only this behavior:
 <commands or scope>
 
-Do not edit files. Report pass/fail, actionable failures, and relevant paths.
+Do not edit files. Run the specified focused checks, then report pass/fail, actionable failures, and relevant paths.
 ```
 
 ## Final response

@@ -19,7 +19,7 @@ This repo mirrors `$HOME` where practical:
 - `.emacs.d` -> `~/.emacs.d`
 - `.pi` -> `~/.pi`
 - `.agents/skills/architect` -> `~/.agents/skills/architect`
-- shell/git/tmux files -> their normal home paths
+- shell/git/tmux/ripgrep files -> their normal home paths
 
 Vim config is intentionally not included.
 
