@@ -5,14 +5,8 @@ Single home for personal configuration.
 ## Install
 
 ```bash
-git clone <repo-url> ~/.dotfiles
+git clone git@github.com:p-ba/.dotfiles.git ~/.dotfiles
 ~/.dotfiles/scripts/setup.sh
-```
-
-For the current machine/session, use this if you do not want to replace the live Pi runtime directory yet:
-
-```bash
-~/.dotfiles/scripts/setup.sh --skip-pi
 ```
 
 ## Layout
