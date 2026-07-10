@@ -64,6 +64,28 @@ link_one() {
   run ln -s "$source" "$target"
 }
 
+bootstrap_git_identity() {
+  local local_gitconfig="$HOME/.gitconfig.local"
+  local git_name git_email
+
+  if [[ -e "$local_gitconfig" || -L "$local_gitconfig" ]]; then
+    return 0
+  fi
+
+  if [[ "$DRY_RUN" == 1 ]]; then
+    echo "[dry-run] would prompt for Git name and email, then create: $local_gitconfig"
+    return 0
+  fi
+
+  echo "Git identity is not configured."
+  read -r -p "Git user name: " git_name
+  read -r -p "Git user email: " git_email
+
+  git config --file "$local_gitconfig" user.name "$git_name"
+  git config --file "$local_gitconfig" user.email "$git_email"
+  echo "created: $local_gitconfig"
+}
+
 LINKS=(
   ".config/nvim:$HOME/.config/nvim"
   ".config/opencode:$HOME/.config/opencode"
@@ -85,5 +107,7 @@ fi
 for mapping in "${LINKS[@]}"; do
   link_one "${mapping%%:*}" "${mapping#*:}"
 done
+
+bootstrap_git_identity
 
 echo "Done. Dotfiles root: $DOTFILES_DIR"
