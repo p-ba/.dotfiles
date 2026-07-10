@@ -1,0 +1,14 @@
+// Settings in here override those in "LSP/LSP.sublime-settings"
+{
+	"log_debug": false,
+	"lsp_code_actions_on_save": {
+		"source.fixAll.eslint": true
+	},
+	"clients": {
+		"omnisharp": {
+	      "enabled": true,
+	      "command": ["~/.local/share/nvim/mason/packages/csharp-language-server/csharp-ls"],
+	      "selector": "source.cs | source.cake"
+	    }
+	}
+}

@@ -1,0 +1,31 @@
+{
+	"bootstrapped": true,
+	"in_process_packages":
+	[
+	],
+	"installed_packages":
+	[
+		"AceJump",
+		"C# Snippets",
+		"Decent Swift Syntax",
+		"Dockerfile Syntax Highlighting",
+		"DoxyDoxygen",
+		"EditorConfig",
+		"Emmet",
+		"FileIcons",
+		"FileManager",
+		"Laravel Blade",
+		"MarkdownEditing",
+		"MarkdownPreview",
+		"NeoVintageous",
+		"Package Control",
+		"PHP Companion",
+		"PHP Getters and Setters",
+		"PHP Snippets",
+		"Pytest Snippets",
+		"Sass",
+		"Twig",
+		"Vue",
+		"x86 and x86_64 Assembly",
+	],
+}

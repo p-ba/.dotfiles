@@ -1,0 +1,97 @@
+[
+    {
+        "keys": ["f1"],
+        "command": "lsp_code_actions",
+        "context": [{"key": "lsp.session_with_capability", "operand": "codeActionProvider"}]
+    },
+	{
+        "keys": ["f12"],
+        "command": "lsp_symbol_definition",
+        "args": {"side_by_side": false, "force_group": true, "fallback": true, "group": -1},
+        "context": [
+            {"key": "lsp.session_with_capability", "operand": "definitionProvider"},
+            {"key": "auto_complete_visible", "operand": false}
+        ]
+    },
+    {
+        "keys": ["ctrl+]"],
+        "command": "lsp_symbol_definition",
+        "args": {"side_by_side": false, "force_group": true, "fallback": true, "group": -1},
+        "context": [
+            {"key": "lsp.session_with_capability", "operand": "definitionProvider"},
+            {"key": "auto_complete_visible", "operand": false}
+        ]
+    },
+    {
+        "keys": ["f2"],
+        "command": "lsp_symbol_rename",
+        "context": [{"key": "lsp.session_with_capability", "operand": "renameProvider"}]
+    },
+    {
+        "keys": ["super+k", "super+r"],
+        "command": "chain",
+        "args": {
+            "commands": [
+                ["reveal_in_side_bar"],
+                ["focus_side_bar"]
+            ]
+        },
+    },
+    {
+        "keys": ["super+k", "super+n"],
+        "command": "file_manager_new_file",
+    },
+    {
+        "keys": ["super+n"],
+        "command": "fm_create",
+    },
+    {
+        "keys": ["super+shift+n"],
+        "command": "fm_create_relative_to_current_file",
+    },
+    // Cmd+P → next result when overlay is open
+    {
+        "keys": ["super+p"],
+        "command": "move",
+        "args": {"by": "lines", "forward": true},
+        "context": [
+            { "key": "overlay_visible", "operator": "equal", "operand": true }
+        ]
+    },
+
+    // Cmd+Shift+P → previous result when overlay is open
+    {
+        "keys": ["super+shift+p"],
+        "command": "move",
+        "args": {"by": "lines", "forward": false},
+        "context": [
+            { "key": "overlay_visible", "operator": "equal", "operand": true }
+        ]
+    },
+
+    // Default behavior when overlay NOT open
+    {
+        "keys": ["super+p"],
+        "command": "show_overlay",
+        "args": {"overlay": "goto"},
+        "context": [
+            { "key": "overlay_visible", "operator": "equal", "operand": false }
+        ]
+    },
+    {
+        "keys": ["ctrl+j"],
+        "command": "next_result",
+        "context": [
+            { "key": "setting.command_mode", "operand": true }
+        ]
+    },
+
+    // Ctrl+k → previous Find Result (Shift+F4)
+    {
+        "keys": ["ctrl+k"],
+        "command": "prev_result",
+        "context": [
+            { "key": "setting.command_mode", "operand": true }
+        ]
+    },
+]

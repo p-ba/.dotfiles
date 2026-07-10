@@ -1,0 +1,10 @@
+// Settings in here override those in "LSP-json/LSP-json.sublime-settings"
+
+{
+	"initializationOptions": {
+		"clearCache": false,
+	},
+	"settings": {
+		"intelephense.diagnostics.enable": false,
+	}
+}

@@ -1,0 +1,7 @@
+let mapleader=<space>
+nnoremap <C-d> <C-d>zz
+nnoremap <C-u> <C-u>zz
+nnoremap gd :LspSymbolDefinition<CR>
+nnoremap gD :LspSymbolDeclaration<CR>
+nnoremap grr :LspSymbolReferences<CR>
+nnoremap <Leader><Leader> :ShowOverlay overlay=goto<CR>

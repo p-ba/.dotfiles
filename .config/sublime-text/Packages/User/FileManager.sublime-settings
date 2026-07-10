@@ -1,0 +1,4 @@
+// Your settings for FileManager. See the default file to see the different options. 
+{
+    "open_help_on_alias_infinite_loop": false,
+}

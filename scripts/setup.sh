@@ -27,6 +27,12 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DOTFILES_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 BACKUP_DIR="$HOME/.dotfiles-backup/$(date +%Y%m%d-%H%M%S)"
 
+case "$(uname -s)" in
+  Darwin) SUBLIME_USER_DIR="$HOME/Library/Application Support/Sublime Text/Packages/User" ;;
+  Linux) SUBLIME_USER_DIR="$HOME/.config/sublime-text/Packages/User" ;;
+  *) SUBLIME_USER_DIR="" ;;
+esac
+
 run() {
   if [[ "$DRY_RUN" == 1 ]]; then
     printf '[dry-run] %q ' "$@"
@@ -99,6 +105,12 @@ LINKS=(
   ".gitconfig:$HOME/.gitconfig"
   ".agents/skills/architect:$HOME/.agents/skills/architect"
 )
+
+if [[ -n "$SUBLIME_USER_DIR" ]]; then
+  LINKS+=(".config/sublime-text/Packages/User:$SUBLIME_USER_DIR")
+else
+  echo "skip Sublime Text config: unsupported platform $(uname -s)"
+fi
 
 if [[ "$SKIP_PI" != 1 ]]; then
   LINKS+=(".pi:$HOME/.pi")

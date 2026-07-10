@@ -15,6 +15,7 @@ This repo mirrors `$HOME` where practical:
 
 - `.config/nvim` -> `~/.config/nvim`
 - `.config/opencode` -> `~/.config/opencode`
+- `.config/sublime-text/Packages/User` -> `~/Library/Application Support/Sublime Text/Packages/User` (macOS) or `~/.config/sublime-text/Packages/User` (Linux)
 - `.emacs.d` -> `~/.emacs.d`
 - `.pi` -> `~/.pi`
 - `.agents/skills/architect` -> `~/.agents/skills/architect`

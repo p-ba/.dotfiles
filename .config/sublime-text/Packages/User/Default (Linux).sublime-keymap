@@ -1,0 +1,7 @@
+[
+	{"keys": ["f9"], "command": "xdebug_continue", "args": {"command": "run"}},
+	{"keys": ["f8"], "command": "xdebug_continue", "args": {"command": "step_over"}},
+	{"keys": ["f7"], "command": "xdebug_continue", "args": {"command": "step_into"}},
+	{"keys": ["f6"], "command": "xdebug_continue", "args": {"command": "step_out"}},
+	{"keys": ["ctrl+space"], "command": "auto_complete" }
+]
