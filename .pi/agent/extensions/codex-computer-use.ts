@@ -49,6 +49,7 @@ export default function (pi: ExtensionAPI) {
 					"--ask-for-approval",
 					"never",
 					"exec",
+					"--skip-git-repo-check",
 					"--ephemeral",
 					"--color",
 					"never",
