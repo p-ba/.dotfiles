@@ -1,42 +1,47 @@
-import type { Plugin } from "@opencode-ai/plugin"
+import { execFile } from "node:child_process"
+import { promisify } from "node:util"
+import { Plugin } from "@opencode-ai/plugin/v2"
 
 const NOTIFIED_SESSIONS = new Set<string>()
+const execFileAsync = promisify(execFile)
 
-export const CmuxNotifyPlugin = (async ({ $, client, directory }) => {
-  return {
-    event: async ({ event }) => {
-      if (event.type !== "session.idle") return
+export default Plugin.define({
+  id: "pavel.cmux-notify",
+  setup: async (ctx) => {
+    const controller = new AbortController()
+    const task = (async () => {
+      for await (const event of ctx.event.subscribe({ signal: controller.signal })) {
+        if (event.type !== "session.idle") continue
 
-      const sessionID = event.properties.sessionID
-      if (NOTIFIED_SESSIONS.has(sessionID)) return
+        const sessionID = event.data.sessionID
+        if (NOTIFIED_SESSIONS.has(sessionID)) continue
 
-      const result = await client.session.get({
-        path: { id: sessionID },
-        query: { directory },
-      })
-      const session = result.data
-      if (session?.parentID) return
+        const session = await ctx.session.get({ sessionID })
+        if (session?.parentID) continue
 
-      NOTIFIED_SESSIONS.add(sessionID)
+        NOTIFIED_SESSIONS.add(sessionID)
 
-      const sessionDirectory = session?.directory ?? directory
-      const cwd = sessionDirectory.replace(/^.*\//, "") || sessionDirectory
-      const title = session?.title?.trim() || "OpenCode session finished"
-      const shortSessionID = sessionID.slice(0, 8)
-      const summary = session?.summary
-      const changes = summary
-        ? `${summary.files} file${summary.files === 1 ? "" : "s"}, +${summary.additions} -${summary.deletions}`
-        : "No file changes"
-      const body = `${title}\n${changes}\nSession ${shortSessionID}`
+        const sessionDirectory = session.location.directory
+        const cwd = sessionDirectory.replace(/^.*\//, "") || sessionDirectory
+        const title = session?.title?.trim() || "OpenCode session finished"
+        const shortSessionID = sessionID.slice(0, 8)
+        const body = `${title}\nSession ${shortSessionID}`
 
-      await $`sh -c 'command -v cmux >/dev/null 2>&1'`
-        .quiet()
-        .then(async () => {
-          await $`cmux notify --title ${"opencode: idle"} --subtitle ${cwd} --body ${body}`.quiet()
-        })
-        .catch(() => {})
-    },
-  }
-}) satisfies Plugin
+        await execFileAsync("cmux", [
+          "notify",
+          "--title",
+          "opencode: idle",
+          "--subtitle",
+          cwd,
+          "--body",
+          body,
+        ]).catch(() => {})
+      }
+    })()
 
-export default CmuxNotifyPlugin
+    return async () => {
+      controller.abort()
+      await task.catch(() => {})
+    }
+  },
+})
