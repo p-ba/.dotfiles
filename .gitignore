@@ -13,6 +13,7 @@ node_modules/
 *.log
 
 # opencode runtime/dependencies
+.config/opencode/service.json
 .config/opencode/node_modules/
 .config/opencode/**/node_modules/
 .config/opencode/package-lock.json

@@ -34,6 +34,18 @@ function M.setup()
         root_markers = { "Package.swift", "compile_commands.json", ".git" },
     })
 
+    -- Relax TypeScript checking for files outside a tsconfig/jsconfig project.
+    -- A project's own compiler options still take precedence.
+    vim.lsp.config("vtsls", {
+        settings = {
+            ["js/ts"] = {
+                implicitProjectConfig = {
+                    strict = false,
+                },
+            },
+        },
+    })
+
     vim.lsp.config("lua_ls", {
         settings = {
             Lua = {

@@ -1,0 +1,10 @@
+{
+  "name": "cmux-notify",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "@earendil-works/pi-coding-agent": "0.80.6",
+    "@types/node": "24.12.4",
+    "typescript": "5.9.3"
+  }
+}

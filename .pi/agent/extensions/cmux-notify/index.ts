@@ -1,4 +1,4 @@
-import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
 import { spawnSync } from "node:child_process";
 import path from "node:path";
 
@@ -21,7 +21,7 @@ function getBasename(cwd: string): string {
 	return base || cwd || "/";
 }
 
-function hasNotifyMarker(ctx: { sessionManager: { getEntries(): Array<{ type: string; customType?: string }> } }): boolean {
+function hasNotifyMarker(ctx: ExtensionContext): boolean {
 	return ctx.sessionManager.getEntries().some((entry) => entry.type === "custom" && entry.customType === CUSTOM_TYPE);
 }
 
@@ -34,7 +34,7 @@ function getUserText(content: unknown): string | undefined {
 		.trim();
 }
 
-function getSessionTitle(ctx: { sessionManager: { getSessionName(): string | undefined; getEntries(): Array<{ type: string; message?: { role: string; content: unknown } }> } }): string {
+function getSessionTitle(ctx: ExtensionContext): string {
 	const name = ctx.sessionManager.getSessionName()?.trim();
 	if (name) return name;
 

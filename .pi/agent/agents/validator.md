@@ -4,6 +4,7 @@ display_name: Validator
 tools: read, grep, find, ls, bash
 extensions: false
 skills: false
+model: openai-codex/gpt-5.6-luna
 thinking: medium
 max_turns: 25
 run_in_background: true
