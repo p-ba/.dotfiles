@@ -11,7 +11,7 @@ Run complex feature work as an architect-led workflow. The main agent owns plann
 
 The main architect session is a planner and reviewer, not an implementer.
 
-- Do **not** directly edit implementation, configuration, test, or documentation files in the main architect session.
+- Do **not** directly edit implementation, configuration, test, or documentation files in the main architect session. This prohibition overrides any general direct-edit policy.
 - Do **not** run the implementation test suite in the main architect session. Delegate automated validation to a test subagent.
 - Use the main session only to clarify requirements, inspect and synthesize evidence, define slices, launch and steer workers, inspect actual diffs/results, review work, and decide which findings to accept.
 - Delegate every implementation slice, accepted fix, and automated test to a subagent, even when the slice is small or tightly coupled. Serialize tightly coupled slices rather than implementing them in the main session.
@@ -20,7 +20,8 @@ The main architect session is a planner and reviewer, not an implementer.
 ## Model policy
 
 - Prefer `openai-codex/gpt-5.6-sol` with high thinking for the main architect session when model controls are available.
-- Use `openai-codex/gpt-5.6-luna` with medium thinking for delegated exploration, implementation, testing, and fixes.
+- Use `openai-codex/gpt-5.6-luna` with high thinking for delegated implementation and accepted fixes.
+- Use `openai-codex/gpt-5.6-luna` with medium thinking for `Explore`, `validator`, and other read-only support.
 - Do not add persistent role-specific agents solely for this workflow; provide the role and boundaries in each delegation prompt.
 
 ## Delegation
@@ -28,11 +29,11 @@ The main architect session is a planner and reviewer, not an implementer.
 Use the generic Agent types:
 
 - `Explore` for read-only reconnaissance and locating relevant code.
-- `general-purpose` for every bounded implementation slice and every accepted review fix.
-- `general-purpose` for automated validation with an explicit no-edit instruction.
+- `general-purpose` for every bounded implementation slice and every accepted fix; these workers run their own focused checks.
+- `validator` for the independent no-edit validation gate, using Luna/medium.
 - `Plan` only when a separate architecture plan is genuinely useful; the main architect still makes final decisions.
 
-For Luna workers, pass `model: "openai-codex/gpt-5.6-luna"` and `thinking: "medium"` when supported.
+The main architect reviews diffs itself using the current session's full task context. For Luna workers, pass `model: "openai-codex/gpt-5.6-luna"`; use `thinking: "high"` for implementation/fixes and `thinking: "medium"` for exploration/validation.
 
 Prefer parallel agents only for independent work. Launch parallel work in one turn, use background execution, and assign disjoint file ownership for concurrent writers. Never duplicate searches already delegated to an agent.
 
@@ -49,15 +50,15 @@ Every code-producing prompt must state:
 1. Clarify only when ambiguity prevents safe implementation; otherwise make reasonable assumptions.
 2. Delegate reconnaissance as needed, then inspect and synthesize enough evidence to identify architecture, conventions, tests, commands, and change boundaries.
 3. Write a concrete plan with implementation slices, explicit subagent ownership, validation assignments, review criteria, and safe parallelism.
-4. Delegate every implementation slice to `general-purpose` workers. Launch independent slices in parallel; serialize overlapping or tightly coupled slices.
-5. Verify actual worker changes; do not rely only on summaries.
-6. Delegate focused automated validation, then broader checks when justified, to dedicated no-edit workers.
-7. Review correctness, tests, architecture, regressions, security, performance, and maintainability in the main thread.
-8. Triage each review remark: delegate an accepted remark as a bounded fix, or reject it with a brief reason.
-9. Repeat delegated fixes, delegated validation, and main-thread review while accepted remarks remain, up to 10 review/fix iterations.
-10. Stop when no accepted unresolved remarks remain or after iteration 10. Report anything still unresolved.
+4. Delegate every implementation slice to `general-purpose` workers. Launch independent slices in parallel; serialize overlapping or tightly coupled slices. Each worker runs focused validation before reporting.
+5. Verify actual worker changes; do not rely only on summaries. Review the actual diffs, requirements, and worker results in the main architect session, which retains the task context needed to steer implementation.
+6. Triage the main-thread findings together, then give one remediation worker the complete accepted list (or use parallel workers only for disjoint ownership). The remediation worker runs focused validation.
+7. After the cohesive feature or change set is ready, launch one independent `validator`. Do not delegate an independent code review by default.
+8. Triage validator findings in the main thread and direct one final bounded fix only when needed. That worker runs focused validation; do not automatically re-run the validator afterward.
+9. Re-run independent validation only for an unresolved validation failure, a high-risk/cross-cutting change, or an explicit user request. Limit work to two remediation batches per user request; treat broader follow-up work as a new request.
+10. Stop when accepted findings are resolved or explicitly documented as risks. Report anything still unresolved.
 
-Count an iteration only when reviewing concrete implementation or fix work. Planning, exploration, validation-only, and completion-only work do not count.
+Count an iteration only for a remediation batch. Planning, exploration, validation-only, and completion-only work do not count.
 
 ## Prompt shapes
 
