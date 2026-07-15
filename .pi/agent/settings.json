@@ -9,6 +9,7 @@
   "packages": [
     "npm:context-mode",
     "npm:pi-playwright",
-    "npm:@tintinweb/pi-subagents@0.13.0"
+    "npm:@tintinweb/pi-subagents@0.13.0",
+    "npm:@juicesharp/rpiv-ask-user-question"
   ]
 }
