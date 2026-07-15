@@ -4,6 +4,7 @@ import { join } from "node:path";
 import {
 	DEFAULT_MAX_BYTES,
 	DEFAULT_MAX_LINES,
+	ExtensionContext,
 	formatSize,
 	truncateHead,
 	type ExtensionAPI,
@@ -36,9 +37,8 @@ export default function (pi: ExtensionAPI) {
 		],
 		parameters: CodexComputerUseParams,
 
-		async execute(_toolCallId, params, signal, _onUpdate, ctx) {
-			const model = ctx.model?.id;
-			if (!model) throw new Error("No Pi model is selected, so Codex cannot inherit one.");
+		async execute(_toolCallId, params, signal, _onUpdate, ctx: ExtensionContext) {
+			if (!ctx.model) throw new Error("No Pi model is selected, so Codex cannot inherit one.");
 
 			const tempDir = await mkdtemp(join(tmpdir(), "pi-codex-computer-use-"));
 			const outputPath = join(tempDir, "final.md");
@@ -56,7 +56,7 @@ export default function (pi: ExtensionAPI) {
 					"--sandbox",
 					"read-only",
 					"--model",
-					model,
+					ctx.model.id,
 					"--cd",
 					ctx.cwd,
 					"--output-last-message",
@@ -77,7 +77,7 @@ export default function (pi: ExtensionAPI) {
 				maxLines: DEFAULT_MAX_LINES,
 				maxBytes: DEFAULT_MAX_BYTES,
 			});
-			let text = `Codex Computer Use (${ctx.model.provider}/${model}) exited with code ${result.code}.\n\n${truncation.content}`;
+			let text = `Codex Computer Use (${ctx.model.provider}/${ctx.model.id}) exited with code ${result.code}.\n\n${truncation.content}`;
 			if (truncation.truncated) {
 				text += `\n\n[Output truncated: showing ${truncation.outputLines} of ${truncation.totalLines} lines (${formatSize(truncation.outputBytes)} of ${formatSize(truncation.totalBytes)}). Full output: ${outputPath}]`;
 			}
@@ -86,7 +86,7 @@ export default function (pi: ExtensionAPI) {
 			return {
 				content: [{ type: "text", text }],
 				details: {
-					model,
+					model: ctx.model.id,
 					provider: ctx.model.provider,
 					cwd: ctx.cwd,
 					exitCode: result.code,
