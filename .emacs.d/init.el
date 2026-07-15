@@ -89,12 +89,15 @@
   (advice-add 'undo-tree-load-history :around #'my/undo-tree-silence))
 
 (use-package undo-tree
-  :config
-  (setq undo-tree-history-directory-alist `(("." . ,(concat user-emacs-directory "undo/"))))
-  (global-undo-tree-mode))
+  ;; Undo-tree is not compatible with Dired buffers on current Emacs builds.
+  ;; Enable it only for buffers that visit files, rather than globally.
+  :hook (find-file . undo-tree-mode)
+  :init
+  (setq undo-tree-history-directory-alist `(("." . ,(concat user-emacs-directory "undo/")))))
 
 (use-package magit
-  :defer t)
+  ;; Load shortly after startup so opening the first status buffer is responsive.
+  :defer 1)
 
 (use-package wgrep
   :defer t
