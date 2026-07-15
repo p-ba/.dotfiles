@@ -1,4 +1,10 @@
-import { CustomEditor, type ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import {
+	CustomEditor,
+	type ExtensionAPI,
+	type ExtensionUIContext,
+	type ExtensionContext,
+	type SessionStartEvent,
+} from "@earendil-works/pi-coding-agent";
 
 const ZERO_WIDTH_SPACE = "\u200b";
 const LOCAL_IMAGE_PATH = /(?<![\w/:])@?(?:(?:~|\.\.?)\/|\/|(?:[\w.-]+\/)+)(?:[^\s/()[\]{}"'`]+\/)*[^\s/()[\]{}"'`]+\.(?:png|jpe?g|webp|gif)(?=$|[\s),.;:!?])/gi;
@@ -6,6 +12,7 @@ const LOCAL_IMAGE_PATH = /(?<![\w/:])@?(?:(?:~|\.\.?)\/|\/|(?:[\w.-]+\/)+)(?:[^\
 type EditorState = {
 	lines: string[];
 };
+type EditorFactory = NonNullable<Parameters<ExtensionUIContext["setEditorComponent"]>[0]>;
 
 /**
  * Keeps local image paths intact for submission while showing a compact label
@@ -18,8 +25,8 @@ class ClipboardImagePlaceholderEditor extends CustomEditor {
 		const originalLines = editor.state.lines;
 		let imageNumber = 0;
 
-		editor.state.lines = originalLines.map((line) =>
-			line.replace(LOCAL_IMAGE_PATH, (imagePath, offset, source) => {
+		editor.state.lines = originalLines.map((line: string) =>
+			line.replace(LOCAL_IMAGE_PATH, (imagePath: string, offset: number, source: string) => {
 				if (/https?:\/\/[^\s]*$/i.test(source.slice(0, offset))) return imagePath;
 
 				imageNumber += 1;
@@ -39,11 +46,13 @@ class ClipboardImagePlaceholderEditor extends CustomEditor {
 }
 
 export default function (pi: ExtensionAPI) {
-	pi.on("session_start", (_event, ctx) => {
+	pi.on("session_start", (_event: SessionStartEvent, ctx: ExtensionContext) => {
 		if (ctx.mode !== "tui") return;
 
-		ctx.ui.setEditorComponent((tui, theme, keybindings) =>
-			new ClipboardImagePlaceholderEditor(tui, theme, keybindings),
-		);
+		ctx.ui.setEditorComponent((
+			tui: Parameters<EditorFactory>[0],
+			theme: Parameters<EditorFactory>[1],
+			keybindings: Parameters<EditorFactory>[2],
+		) => new ClipboardImagePlaceholderEditor(tui, theme, keybindings));
 	});
 }

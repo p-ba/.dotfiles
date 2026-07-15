@@ -4,19 +4,21 @@ import { join } from "node:path";
 import {
 	DEFAULT_MAX_BYTES,
 	DEFAULT_MAX_LINES,
-	ExtensionContext,
 	formatSize,
 	truncateHead,
+	type AgentToolUpdateCallback,
 	type ExtensionAPI,
+	type ExtensionContext,
 } from "@earendil-works/pi-coding-agent";
-import { Type } from "typebox";
+import { Type, type Static } from "typebox";
 
-const CodexComputerUseParams = Type.Object({
+const codexComputerUseSchema = Type.Object({
 	task: Type.String({
 		description:
 			"A complete computer-use task for Codex, including the target site/app, desired outcome, and any safe stopping point.",
 	}),
 });
+type CodexComputerUseParams = Static<typeof codexComputerUseSchema>;
 
 function buildPrompt(task: string): string {
 	return `You are a delegated computer-use agent. Complete this explicit user request using the enabled Chrome, Browser, or Computer Use tools; prefer Chrome for browser tasks.\n\nUser request:\n${task}\n\nRules:\n- Operate the visible browser or macOS desktop rather than editing local project files or using direct HTTP APIs, unless the user explicitly requests otherwise.\n- Do not bypass logins, MFA, CAPTCHAs, or other access controls. Ask the user to take over when authentication or a CAPTCHA is required.\n- Stop and report before any irreversible or externally visible action, including submitting a form, sending a message, publishing, placing an order, making a payment, deleting data, or changing account/security settings, unless the user explicitly requested that exact final action.\n- Do not reveal secrets, credentials, or private data in the final response.\n- End with a concise summary of what you completed, what needs user input, and any remaining step.`;
@@ -35,9 +37,15 @@ export default function (pi: ExtensionAPI) {
 		promptGuidelines: [
 			"Use codex_computer_use for browser or macOS desktop interaction that should be performed by Codex's Computer Use, Chrome, or Browser plugins; do not use it for ordinary local coding or read-only web research.",
 		],
-		parameters: CodexComputerUseParams,
+		parameters: codexComputerUseSchema,
 
-		async execute(_toolCallId, params, signal, _onUpdate, ctx: ExtensionContext) {
+		async execute(
+			_toolCallId: string,
+			params: CodexComputerUseParams,
+			signal: AbortSignal | undefined,
+			_onUpdate: AgentToolUpdateCallback<unknown> | undefined,
+			ctx: ExtensionContext,
+		) {
 			if (!ctx.model) throw new Error("No Pi model is selected, so Codex cannot inherit one.");
 
 			const tempDir = await mkdtemp(join(tmpdir(), "pi-codex-computer-use-"));

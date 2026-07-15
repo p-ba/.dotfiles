@@ -1,4 +1,9 @@
-import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
+import type {
+	AgentSettledEvent,
+	ExtensionAPI,
+	ExtensionContext,
+	SessionEntry,
+} from "@earendil-works/pi-coding-agent";
 import { spawnSync } from "node:child_process";
 import path from "node:path";
 
@@ -22,14 +27,16 @@ function getBasename(cwd: string): string {
 }
 
 function hasNotifyMarker(ctx: ExtensionContext): boolean {
-	return ctx.sessionManager.getEntries().some((entry) => entry.type === "custom" && entry.customType === CUSTOM_TYPE);
+	return ctx.sessionManager.getEntries().some(
+		(entry: SessionEntry) => entry.type === "custom" && entry.customType === CUSTOM_TYPE,
+	);
 }
 
 function getUserText(content: unknown): string | undefined {
 	if (typeof content === "string") return content;
 	if (!Array.isArray(content)) return undefined;
 	return content
-		.map((part) => (part && typeof part === "object" && "type" in part && part.type === "text" && "text" in part ? String(part.text) : ""))
+		.map((part: unknown) => (part && typeof part === "object" && "type" in part && part.type === "text" && "text" in part ? String(part.text) : ""))
 		.join("\n")
 		.trim();
 }
@@ -49,7 +56,7 @@ function getSessionTitle(ctx: ExtensionContext): string {
 }
 
 export default function (pi: ExtensionAPI) {
-	pi.on("agent_settled", async (_event, ctx) => {
+	pi.on("agent_settled", async (_event: AgentSettledEvent, ctx: ExtensionContext) => {
 		if (ctx.mode !== "tui") return;
 
 		const sessionFile = ctx.sessionManager.getSessionFile();
