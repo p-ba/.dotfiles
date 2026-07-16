@@ -18,7 +18,6 @@ This repo mirrors `$HOME` where practical:
 - `.config/sublime-text/Packages/User` -> `~/Library/Application Support/Sublime Text/Packages/User` (macOS) or `~/.config/sublime-text/Packages/User` (Linux)
 - `.emacs.d` -> `~/.emacs.d`
 - `.pi` -> `~/.pi`
-- `.agents/skills/architect` -> `~/.agents/skills/architect`
 - shell/git/tmux/ripgrep files -> their normal home paths
 
 Vim config is intentionally not included.
@@ -29,4 +28,3 @@ Vim config is intentionally not included.
 - Emacs' nested `.git` directory was removed from `.emacs.d` during migration.
 - Pi auth/session/runtime directories are ignored; audit before force-adding any Pi files.
 - Git identity and other machine-specific Git settings live in `~/.gitconfig.local`, which is included by the tracked `.gitconfig` but remains outside this repository. On first setup, the script prompts for your name and email and creates this file outside the repository.
-- The architect workflow is maintained as a portable skill; invoke it in Pi with `/skill:architect <task>`.

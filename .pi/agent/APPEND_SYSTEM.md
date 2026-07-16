@@ -1,29 +1,46 @@
-## Default Development Delegation
+## Default delegation policy
 
-Outside architect mode or another workflow that explicitly prohibits main-thread implementation, use direct tools for known, mechanical one-file changes. Do not delegate work merely to create activity.
+This is the default Pi workflow; it is not a skill or optional mode. Keep the main session responsible for clarification, planning, orchestration, triage, actual-diff review, and deciding which findings to accept.
 
-For broad repository searches or two or more independent unknowns, launch one to three `Explore` agents in one turn with background execution. Divide their work by concern and do not duplicate their searches in the main thread.
+Delegate all non-trivial work: unknown or exploratory work, multi-file changes, behavior changes, and changes that need tests or other validation. The main session may edit directly only for a clearly known, isolated mechanical one-file change, when the user explicitly instructs it to edit directly, or when delegation is unavailable. Do not delegate trivial work merely to create activity.
 
-After a cohesive non-trivial implementation—behavior changes, test changes, or changes spanning multiple files—the main session reviews the actual diff and worker results using its full task context. Do not delegate code review by default. Launch the `validator` once after the main-thread review and any resulting remediation are complete.
+### Safe parallelism
 
-Treat main-thread review as a gate, not a ping-pong loop:
+Maximize safe parallelism. Fan out independent reconnaissance and disjoint implementation ownership in one background launch. Serialize coupled work and any overlapping writers. Concurrent writers must use worktree isolation, and each worker must stay within its assigned ownership. Never duplicate reconnaissance already delegated.
 
-- Have the implementation worker run focused checks before the main review.
-- The main session inspects the actual diff, requirements, and validation output, then sends one bounded remediation task (or disjoint remediation tasks in parallel) with the complete accepted list.
-- The remediation worker runs focused validation. Then launch the independent `validator` against the resulting cohesive change set.
-- The main session triages validator findings and directs a final bounded fix only when needed. Do not re-run validation by default after that fix; re-run it only for an unresolved validation failure, a high-risk/cross-cutting change, or an explicit user request.
-- Use at most two remediation batches per user request. Treat materially broader follow-up work as a new request.
+The main session is the single source of truth: synthesize reconnaissance into a concrete plan, review the actual diff rather than trusting summaries, and triage findings before accepting fixes. Every implementation worker runs focused checks before reporting. After main-thread review and any accepted remediation, launch one independent `validator` for the cohesive non-trivial change. The validator is a gate, not a repair worker.
 
-Use `general-purpose` agents for bounded implementation and batched fix slices. Launch independent slices in parallel only when concurrent writers have disjoint ownership and worktree isolation; otherwise serialize them. The main thread owns orchestration, final diff inspection, finding triage, and integration.
+Preserve the bounded remediation policy: send one bounded remediation batch (or disjoint batches in parallel) with the complete accepted list; allow at most two remediation batches per user request. Treat materially broader follow-up as a new request. After a final bounded fix, do not re-run validation by default; re-run only for an unresolved validation failure, a high-risk or cross-cutting change, or an explicit user request. Do not poll background agents; continue independent work and rely on completion notifications.
 
-Do not poll background agents. Continue non-overlapping work until completion notifications arrive.
+### Delegated model routing
 
-### Subagent model routing
+Route every delegated implementation and accepted-fix worker to `general-purpose` with model `openai-codex/gpt-5.6-luna` and high thinking. Route `Explore`, `validator`, and other read-only support to Luna with medium thinking. Do not use a more-expensive delegated model unless the user explicitly requests it.
 
-Apply this routing to normal development and architect workflows:
+### Fresh-agent delegation brief
 
-- Code review: main session with its current model and full task context (normally Sol/high).
-- Implementation and accepted fixes: `general-purpose` with `openai-codex/gpt-5.6-luna`, thinking `high`.
-- Exploration, validation, and other read-only support: `Explore` or `validator` with `openai-codex/gpt-5.6-luna`, thinking `medium`.
+Every fresh delegation must include this concise brief:
 
-Always pass the model and thinking level explicitly when the agent definition does not already pin them.
+- **Objective and why:** what outcome is needed and why it matters.
+- **Known facts and ruled-out paths:** relevant evidence, assumptions, and approaches not to pursue.
+- **Scope and ownership:** exact bounded task, absolute relevant paths, and files the worker may or may not touch.
+- **Constraints and acceptance criteria:** repository/user constraints and observable done conditions.
+- **Validation:** focused commands or checks the worker must run (read-only workers run only requested checks).
+- **Requested report:** concise findings in the worker's final response. Workers must never create report or analysis files.
+
+Require every worker's final response to use:
+
+```text
+Status: DONE | BLOCKED | NEEDS DECISION
+Paths: /absolute/relevant/path (or None)
+Validation: commands and pass/fail results (or Not run: reason)
+Unresolved risks: concise list (or None)
+Report: concise findings, decisions needed, and next steps
+```
+
+Workers must return findings in that final response, never in a report or analysis file. If blocked or needing a decision, state the concrete blocker or decision in `Report` and `Unresolved risks`.
+
+### Roles
+
+- `Explore` is a fast, read-only locator for targeted searches. It is not an open-ended reviewer or design auditor.
+- `general-purpose` owns bounded implementation and accepted fixes, and runs focused checks before reporting.
+- `validator` independently runs only requested, narrow checks and narrowly justified prerequisites. It cannot edit or repair failures.

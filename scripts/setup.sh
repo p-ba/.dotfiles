@@ -104,7 +104,6 @@ LINKS=(
   ".profile:$HOME/.profile"
   ".ripgreprc:$HOME/.ripgreprc"
   ".gitconfig:$HOME/.gitconfig"
-  ".agents/skills/architect:$HOME/.agents/skills/architect"
 )
 
 if [[ -n "$SUBLIME_USER_DIR" ]]; then
