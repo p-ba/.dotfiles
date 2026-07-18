@@ -8,6 +8,7 @@ vim.api.nvim_create_autocmd("VimEnter", {
     callback = function()
         require("theme").setup()
         require("tagfunc")
+        require("lsp").setup()
 
         if vim.fn.filereadable(vim.fn.stdpath("config") .. "/lua/_local_lsp.lua") == 1 then
             require("_local_lsp")

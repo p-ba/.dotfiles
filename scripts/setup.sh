@@ -42,6 +42,80 @@ run() {
   fi
 }
 
+link_codex() {
+  local source="$DOTFILES_DIR/.codex"
+  local target="$HOME/.codex"
+
+  if [[ ! -d "$source" ]]; then
+    echo "skip missing source: $source"
+    return 0
+  fi
+
+  if [[ -L "$target" && "$(readlink "$target")" == "$source" ]]; then
+    echo "ok: $target -> $source"
+    return 0
+  fi
+
+  run mkdir -p "$(dirname "$target")"
+
+  if [[ "$DRY_RUN" == 1 ]]; then
+    if [[ -d "$target" && ! -L "$target" ]]; then
+      echo "[dry-run] would merge local Codex data from: $target"
+    elif [[ -e "$target" || -L "$target" ]]; then
+      echo "[dry-run] would backup: $target -> $BACKUP_DIR/${target#$HOME/}"
+    fi
+    echo "[dry-run] ln -s $source $target"
+    return 0
+  fi
+
+  if [[ -d "$target" && ! -L "$target" ]]; then
+    local backup_target="$BACKUP_DIR/${target#$HOME/}"
+    local entry name link
+
+    echo "backup: $target -> $backup_target"
+    mkdir -p "$(dirname "$backup_target")"
+    mv "$target" "$backup_target"
+
+    while IFS= read -r -d '' entry; do
+      name="${entry##*/}"
+      if [[ -L "$entry" ]]; then
+        link="$(readlink "$entry")"
+        if [[ "$name" == "AGENTS.md" && "$link" == "$source/AGENTS.md" ]] ||
+           [[ "$name" == "agents" && "$link" == "$source/agents" ]]; then
+          continue
+        fi
+      fi
+      if [[ -e "$source/$name" || -L "$source/$name" ]]; then
+        echo "Codex source conflict: $source/$name" >&2
+        mv "$backup_target" "$target"
+        return 1
+      fi
+    done < <(find -P "$backup_target" -mindepth 1 -maxdepth 1 -print0)
+
+    while IFS= read -r -d '' entry; do
+      name="${entry##*/}"
+      if [[ -L "$entry" ]]; then
+        link="$(readlink "$entry")"
+        if [[ "$name" == "AGENTS.md" && "$link" == "$source/AGENTS.md" ]] ||
+           [[ "$name" == "agents" && "$link" == "$source/agents" ]]; then
+          rm "$entry"
+          continue
+        fi
+      fi
+      mv "$entry" "$source/$name"
+    done < <(find -P "$backup_target" -mindepth 1 -maxdepth 1 -print0)
+    rmdir "$backup_target" "$BACKUP_DIR" 2>/dev/null || true
+  elif [[ -e "$target" || -L "$target" ]]; then
+    local backup_target="$BACKUP_DIR/${target#$HOME/}"
+    echo "backup: $target -> $backup_target"
+    mkdir -p "$(dirname "$backup_target")"
+    mv "$target" "$backup_target"
+  fi
+
+  echo "link: $target -> $source"
+  ln -s "$source" "$target"
+}
+
 link_one() {
   local rel="$1"
   local target="$2"
@@ -115,6 +189,8 @@ fi
 if [[ "$SKIP_PI" != 1 ]]; then
   LINKS+=(".pi:$HOME/.pi")
 fi
+
+link_codex
 
 for mapping in "${LINKS[@]}"; do
   link_one "${mapping%%:*}" "${mapping#*:}"

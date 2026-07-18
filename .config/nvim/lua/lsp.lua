@@ -1,6 +1,7 @@
 local M = {}
 
 local did_setup = false
+local managed_servers = { "clangd", "gopls", "vtsls", "lua_ls", "eslint" }
 
 function M.setup()
     if did_setup then
@@ -8,7 +9,20 @@ function M.setup()
     end
     did_setup = true
 
-    vim.pack.add({ "https://github.com/neovim/nvim-lspconfig" })
+    vim.pack.add({
+        "https://github.com/neovim/nvim-lspconfig",
+        "https://github.com/mason-org/mason.nvim",
+        "https://github.com/mason-org/mason-lspconfig.nvim",
+    })
+
+    require("mason").setup({
+        PATH = "prepend",
+    })
+
+    require("mason-lspconfig").setup({
+        ensure_installed = managed_servers,
+        automatic_enable = managed_servers,
+    })
 
     local capabilities = vim.tbl_deep_extend("force", vim.lsp.protocol.make_client_capabilities(), {
         textDocument = {
