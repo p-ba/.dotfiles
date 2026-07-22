@@ -2,6 +2,7 @@ local M = {}
 
 local did_setup = false
 local managed_servers = { "clangd", "gopls", "vtsls", "lua_ls", "eslint" }
+local format_autocmds = {}
 
 function M.setup()
     if did_setup then
@@ -23,6 +24,8 @@ function M.setup()
         ensure_installed = managed_servers,
         automatic_enable = managed_servers,
     })
+
+    local format_group = vim.api.nvim_create_augroup("user.lsp.format", { clear = true })
 
     local capabilities = vim.tbl_deep_extend("force", vim.lsp.protocol.make_client_capabilities(), {
         textDocument = {
@@ -93,13 +96,15 @@ function M.setup()
 
             for _, lsp in ipairs(format_on_save) do
                 if lsp == client.name and client:supports_method("textDocument/formatting") then
-                    vim.api.nvim_create_autocmd("BufWritePre", {
-                        group = vim.api.nvim_create_augroup("user.lsp", { clear = false }),
+                    local format_autocmd = vim.api.nvim_create_autocmd("BufWritePre", {
+                        group = format_group,
                         buffer = args.buf,
                         callback = function()
                             vim.lsp.buf.format({ bufnr = args.buf, id = client.id, timeout_ms = 1000 })
                         end,
                     })
+                    format_autocmds[args.buf] = format_autocmds[args.buf] or {}
+                    format_autocmds[args.buf][client.id] = format_autocmd
                 end
             end
             if client:supports_method("textDocument/completion") then
@@ -110,15 +115,20 @@ function M.setup()
 
     vim.api.nvim_create_autocmd("LspDetach", {
         callback = function(args)
-            local client = vim.lsp.get_client_by_id(args.data.client_id)
-            if not client then
+            local buffer_autocmds = format_autocmds[args.buf]
+            if not buffer_autocmds then
                 return
             end
-            if client:supports_method("textDocument/formatting") then
-                vim.api.nvim_clear_autocmds({
-                    event = "BufWritePre",
-                    buffer = args.buf,
-                })
+
+            local format_autocmd = buffer_autocmds[args.data.client_id]
+            if not format_autocmd then
+                return
+            end
+
+            pcall(vim.api.nvim_del_autocmd, format_autocmd)
+            buffer_autocmds[args.data.client_id] = nil
+            if next(buffer_autocmds) == nil then
+                format_autocmds[args.buf] = nil
             end
         end,
     })

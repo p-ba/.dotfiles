@@ -1,7 +1,7 @@
 setopt inc_append_history
 [ -t 0 ] && [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
-if [ ${TERM:-} = 'xterm-ghostty' ]; then
+if [ ${TERM:-} = 'xterm-256color' ]; then
     #exec tmux new -A -s home
 fi
 

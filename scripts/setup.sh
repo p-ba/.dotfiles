@@ -178,6 +178,7 @@ LINKS=(
   ".profile:$HOME/.profile"
   ".ripgreprc:$HOME/.ripgreprc"
   ".gitconfig:$HOME/.gitconfig"
+  "scripts/fzf_tmux:$HOME/.local/bin/fzf_tmux"
 )
 
 if [[ -n "$SUBLIME_USER_DIR" ]]; then

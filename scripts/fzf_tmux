@@ -1,0 +1,60 @@
+#!/usr/bin/env zsh
+
+# Project picker used by the fzf ZLE widget and the tmux prefix binding.
+# Keep the implementation in a function so this file can safely be sourced
+# from an interactive shell without leaking temporary variables.
+_dotfiles_fzf_tmux() {
+    emulate -L zsh
+
+    local selected r_dir workspace_json workspace_refs workspace_ref session_name
+
+    # A cancelled or failed picker must not change the caller's shell state.
+    if ! selected="$(find "$HOME/.config" "/Volumes/Projects" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | fzf)"; then
+        return 0
+    fi
+    [[ -n "$selected" ]] || return 0
+
+    if ! r_dir="$(realpath "$selected" 2>/dev/null)"; then
+        return 0
+    fi
+    [[ -n "$r_dir" ]] || return 0
+
+    # Always use cmux when available: Ctrl-F should find or create a project
+    # workspace from any terminal, regardless of its TERM value.
+    if command -v cmux >/dev/null 2>&1; then
+        if ! workspace_json="$(cmux workspace list --json 2>/dev/null)" ||
+            ! command -v jq >/dev/null 2>&1 ||
+            ! workspace_refs="$(printf '%s\n' "$workspace_json" | jq -r --arg dir "$r_dir" --arg selected "$selected" \
+                '.workspaces[]? | select((.current_directory // "") == $dir or (.current_directory // "") == $selected or ((.current_directory // "") | startswith($dir + "/")) or ((.current_directory // "") | startswith($selected + "/"))) | (.ref // empty)' 2>/dev/null)"; then
+            cmux workspace create --cwd "$selected" --focus true >/dev/null
+            return $?
+        fi
+
+        # jq can return more than one exact match; reuse the first workspace.
+        workspace_ref="${workspace_refs%%$'\n'*}"
+        if [[ -n "$workspace_ref" ]]; then
+            cmux workspace select --workspace "$workspace_ref" >/dev/null
+            return $?
+        else
+            cmux workspace create --cwd "$selected" --focus true >/dev/null
+            return $?
+        fi
+    fi
+
+    if [[ "${TERM:-}" != screen && "${TERM:-}" != screen-256color ]]; then
+        cd -- "$r_dir" || return 0
+        zle reset-prompt 2>/dev/null || true
+        return 0
+    fi
+
+    session_name="$(echo "$r_dir" | sed 's/\./_/g')"
+    tmux new -d -c "$r_dir" -A -s "$session_name" >/dev/null 2>&1
+    if [[ -z "${TMUX:-}" ]]; then
+        tmux attach -t "$session_name"
+    else
+        tmux switch -t "$session_name"
+    fi
+}
+
+_dotfiles_fzf_tmux
+unfunction _dotfiles_fzf_tmux 2>/dev/null || true
