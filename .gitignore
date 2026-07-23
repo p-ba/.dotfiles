@@ -23,6 +23,7 @@ node_modules/
 
 # pi runtime/secrets; keep settings/config-like files explicit with git add -f if needed
 .pi/agent/auth.json
+.pi/agent/models-store.json
 .pi/agent/sessions/
 .pi/agent/npm/
 .pi/workflows/projects/

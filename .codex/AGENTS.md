@@ -19,16 +19,16 @@ Maximize useful parallelism within the available thread limit:
 
 ## Delegated model routing
 
-The user explicitly requires every delegated agent to run on `gpt-5.6-luna`. For every `spawn_agent` call, request the `gpt-5.6-luna` model override unconditionally. Do not let a child inherit the main session's Sol model, even when the task name or custom role suggests the intended routing.
+Use the configured custom roles for all delegated work. Their agent files pin the intended model and reasoning effort; do not pass redundant `model` or `reasoning_effort` overrides when spawning them.
 
-Use these custom roles where the runtime supports role selection:
+Use these custom roles:
 
-- `worker`: implementation and accepted fixes, with high reasoning.
-- `explorer`: targeted read-only discovery, with medium reasoning.
-- `validator`: narrow read-only validation, with medium reasoning.
-- `default`: other bounded delegated work, with high reasoning.
+- `worker`: implementation and accepted fixes.
+- `explorer`: targeted read-only discovery.
+- `validator`: narrow read-only validation.
+- `default`: other bounded delegated work.
 
-Do not use a more expensive model for a subagent unless the user explicitly requests it or Luna has produced concrete evidence that it cannot complete the assigned task. Prefer high reasoning for implementation and medium reasoning for read-only support when the runtime exposes a per-child reasoning override.
+If a configured role is unavailable or does not use the expected model, do not silently substitute a more expensive model. Continue on the main thread or report the routing limitation.
 
 ## Delegation brief
 

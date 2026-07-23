@@ -1,0 +1,4 @@
+{
+  "defaultConcurrency": 3,
+  "excludeSubagentTools": ["Agent"]
+}
