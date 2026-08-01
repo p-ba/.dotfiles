@@ -1,7 +1,7 @@
 name = "default"
-description = "Luna-powered general-purpose fallback for bounded delegated work that does not fit a more specific role."
-model = "gpt-5.6-luna"
-model_reasoning_effort = "high"
+description = "Terra-powered general-purpose fallback for bounded delegated work that does not fit a more specific role."
+model = "gpt-5.6-terra"
+model_reasoning_effort = "medium"
 developer_instructions = """
 Own the concrete bounded task delegated by the parent agent. Stay within the assigned scope, avoid duplicating other agents, and make independent progress without asking the parent for routine decisions.
 
