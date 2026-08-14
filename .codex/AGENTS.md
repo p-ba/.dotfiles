@@ -12,6 +12,7 @@ Maximize useful parallelism within the available thread limit:
 
 - Launch independent reconnaissance or disjoint implementation tasks together.
 - Give concurrent writers disjoint file ownership. Never let agents edit overlapping files concurrently.
+- Prefer separate worktrees for independent, write-heavy chats; retain explicit file ownership even when worktrees are used.
 - Serialize coupled work and overlapping changes.
 - Continue non-overlapping main-thread work while subagents run. Wait only when their result is required for the next critical-path action.
 - Review the actual diff and run the final critical checks on the main thread; do not trust summaries as proof.
@@ -25,6 +26,7 @@ Use these custom roles:
 
 - `worker`: implementation and accepted fixes.
 - `explorer`: targeted read-only discovery.
+- `reviewer`: independent read-only review for correctness, security, regressions, and missing tests.
 - `validator`: narrow read-only validation.
 - `default`: other bounded delegated work.
 

@@ -14,7 +14,8 @@ git clone git@github.com:p-ba/.dotfiles.git ~/.dotfiles
 This repo mirrors `$HOME` where practical:
 
 - `.config/nvim` -> `~/.config/nvim`
-- `.codex` -> `~/.codex` (managed guidance and custom agents are tracked; local Codex auth/config/runtime state is ignored)
+- `.codex/AGENTS.md` -> `~/.codex/AGENTS.md`
+- `.codex/agents` -> `~/.codex/agents`
 - `.config/opencode` -> `~/.config/opencode`
 - `.config/sublime-text/Packages/User` -> `~/Library/Application Support/Sublime Text/Packages/User` (macOS) or `~/.config/sublime-text/Packages/User` (Linux)
 - `.emacs.d` -> `~/.emacs.d`
@@ -28,6 +29,9 @@ Vim config is intentionally not included.
 - Existing targets are backed up under `~/.dotfiles-backup/<timestamp>/` before symlinking.
 - Emacs' nested `.git` directory was removed from `.emacs.d` during migration.
 - Pi auth/session/runtime directories are ignored; audit before force-adding any Pi files.
-- Codex auth, configuration, and runtime state live under the managed `.codex` directory but are ignored; only `AGENTS.md` and `agents/*.toml` are intended for Git.
-- Codex uses Sol for the main session. Global guidance encourages safe delegation and requests Luna for every child; custom roles pin Luna on runtimes that expose role selection. The current v2 collaboration backend still inherits Sol unless the originating user prompt explicitly requests Luna, so add “use Luna for all subagents” to a task when model routing must be guaranteed. Start a new Codex session after changing these files because global instructions are discovered once per session.
+- `~/.codex` is always a real, local Codex runtime directory. It holds auth, sessions, caches, plugins, and the user-owned `config.toml`; none of that runtime state is linked into or tracked by this repository.
+- Setup links only durable Codex guidance (`AGENTS.md`) and custom roles (`agents/`) from Git. It seeds `~/.codex/config.toml` from tracked `.codex/config.base.toml` only when no local config exists, so later setup runs never overwrite local configuration.
+- A legacy whole-directory `~/.codex` symlink is backed up without following it and replaced with a real directory. Migrate runtime state from the old referent before running setup on a legacy installation; the 2026-08-14 upgrade of this repository performed that move in place. Existing local `AGENTS.md` or `agents/` entries are backed up individually before the managed links are installed.
+- Codex uses Sol for the primary session; Terra powers the default, worker, validator, and independent reviewer roles; Luna powers focused read-only exploration. Shell aliases keep `codex` on its normal approval safeguards, `c` is the same command, and `ca` opts into automatic approval review. The portable baseline uses on-request approval and workspace-scoped permissions; start a new Codex session after changing guidance or roles.
+- `.codex/hooks.json` is a project-local Stop hook that silently runs `git diff --check` and `bash -n scripts/setup.sh`; it blocks completion with a concise reason if either check fails, without running setup.
 - Git identity and other machine-specific Git settings live in `~/.gitconfig.local`, which is included by the tracked `.gitconfig` but remains outside this repository. On first setup, the script prompts for your name and email and creates this file outside the repository.

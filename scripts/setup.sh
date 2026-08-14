@@ -45,75 +45,65 @@ run() {
 link_codex() {
   local source="$DOTFILES_DIR/.codex"
   local target="$HOME/.codex"
+  local config_base="$source/config.base.toml"
+  local config_target="$target/config.toml"
+  local name source_entry target_entry backup_target
+  local target_will_be_replaced=0
 
-  if [[ ! -d "$source" ]]; then
-    echo "skip missing source: $source"
-    return 0
-  fi
-
-  if [[ -L "$target" && "$(readlink "$target")" == "$source" ]]; then
-    echo "ok: $target -> $source"
+  if [[ ! -f "$source/AGENTS.md" || ! -d "$source/agents" || ! -f "$config_base" ]]; then
+    echo "skip incomplete Codex source: $source" >&2
     return 0
   fi
 
   run mkdir -p "$(dirname "$target")"
 
-  if [[ "$DRY_RUN" == 1 ]]; then
-    if [[ -d "$target" && ! -L "$target" ]]; then
-      echo "[dry-run] would merge local Codex data from: $target"
-    elif [[ -e "$target" || -L "$target" ]]; then
-      echo "[dry-run] would backup: $target -> $BACKUP_DIR/${target#$HOME/}"
+  # Codex owns this runtime directory. A legacy directory symlink is backed up
+  # as a link without following it, so its runtime data is never moved into Git.
+  if [[ -L "$target" || ( -e "$target" && ! -d "$target" ) ]]; then
+    target_will_be_replaced=1
+    backup_target="$BACKUP_DIR/${target#$HOME/}"
+    echo "backup: $target -> $backup_target"
+    run mkdir -p "$(dirname "$backup_target")"
+    run mv "$target" "$backup_target"
+  elif [[ -d "$target" ]]; then
+    echo "ok: using local Codex runtime directory: $target"
+  fi
+
+  run mkdir -p "$target"
+
+  for name in AGENTS.md agents; do
+    source_entry="$source/$name"
+    target_entry="$target/$name"
+
+    if [[ "$DRY_RUN" == 1 && "$target_will_be_replaced" == 1 ]]; then
+      echo "link: $target_entry -> $source_entry"
+      run ln -s "$source_entry" "$target_entry"
+      continue
     fi
-    echo "[dry-run] ln -s $source $target"
-    return 0
+
+    if [[ -L "$target_entry" && "$(readlink "$target_entry")" == "$source_entry" ]]; then
+      echo "ok: $target_entry -> $source_entry"
+      continue
+    fi
+
+    if [[ -e "$target_entry" || -L "$target_entry" ]]; then
+      backup_target="$BACKUP_DIR/${target_entry#$HOME/}"
+      echo "backup: $target_entry -> $backup_target"
+      run mkdir -p "$(dirname "$backup_target")"
+      run mv "$target_entry" "$backup_target"
+    fi
+
+    echo "link: $target_entry -> $source_entry"
+    run ln -s "$source_entry" "$target_entry"
+  done
+
+  if [[ "$DRY_RUN" == 1 && "$target_will_be_replaced" == 1 ]] ||
+     [[ ! -e "$config_target" && ! -L "$config_target" ]]; then
+    echo "seed: $config_target <- $config_base"
+    run cp "$config_base" "$config_target"
+  else
+    echo "ok: preserving local Codex config: $config_target"
   fi
-
-  if [[ -d "$target" && ! -L "$target" ]]; then
-    local backup_target="$BACKUP_DIR/${target#$HOME/}"
-    local entry name link
-
-    echo "backup: $target -> $backup_target"
-    mkdir -p "$(dirname "$backup_target")"
-    mv "$target" "$backup_target"
-
-    while IFS= read -r -d '' entry; do
-      name="${entry##*/}"
-      if [[ -L "$entry" ]]; then
-        link="$(readlink "$entry")"
-        if [[ "$name" == "AGENTS.md" && "$link" == "$source/AGENTS.md" ]] ||
-           [[ "$name" == "agents" && "$link" == "$source/agents" ]]; then
-          continue
-        fi
-      fi
-      if [[ -e "$source/$name" || -L "$source/$name" ]]; then
-        echo "Codex source conflict: $source/$name" >&2
-        mv "$backup_target" "$target"
-        return 1
-      fi
-    done < <(find -P "$backup_target" -mindepth 1 -maxdepth 1 -print0)
-
-    while IFS= read -r -d '' entry; do
-      name="${entry##*/}"
-      if [[ -L "$entry" ]]; then
-        link="$(readlink "$entry")"
-        if [[ "$name" == "AGENTS.md" && "$link" == "$source/AGENTS.md" ]] ||
-           [[ "$name" == "agents" && "$link" == "$source/agents" ]]; then
-          rm "$entry"
-          continue
-        fi
-      fi
-      mv "$entry" "$source/$name"
-    done < <(find -P "$backup_target" -mindepth 1 -maxdepth 1 -print0)
-    rmdir "$backup_target" "$BACKUP_DIR" 2>/dev/null || true
-  elif [[ -e "$target" || -L "$target" ]]; then
-    local backup_target="$BACKUP_DIR/${target#$HOME/}"
-    echo "backup: $target -> $backup_target"
-    mkdir -p "$(dirname "$backup_target")"
-    mv "$target" "$backup_target"
-  fi
-
-  echo "link: $target -> $source"
-  ln -s "$source" "$target"
 }
 
 link_one() {

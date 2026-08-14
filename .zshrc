@@ -67,9 +67,10 @@ alias /bin/bash='/opt/homebrew/bin/bash'
 alias vim=nvim
 export EDITOR=nvim
 export VISUAL=nvim
-# Run Codex without approval prompts or its filesystem sandbox by default.
-alias codex='command codex --yolo'
+# Run Codex with its standard approval safeguards by default.
+alias codex='command codex'
 alias c=codex
+alias ca='command codex --approve-for-me'
 
 __docker_exec() {
     CONTAINER_ID=$(docker ps | fzf | awk '{print $1}')
