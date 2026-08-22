@@ -9,7 +9,7 @@ _dotfiles_fzf_tmux() {
     local selected r_dir workspace_json workspace_refs workspace_ref session_name
 
     # A cancelled or failed picker must not change the caller's shell state.
-    if ! selected="$(find "$HOME/.config" "/Volumes/Projects" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | fzf)"; then
+    if ! selected="$(find "$HOME/.config" "/Volumes/Projects/alchemy" "/Volumes/Projects" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | fzf)"; then
         return 0
     fi
     [[ -n "$selected" ]] || return 0

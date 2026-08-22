@@ -16,4 +16,4 @@ Otherwise create or update `.opencode/goal.md` in the current project and struct
 - last updated date, if available
 
 Do not edit unrelated files unless they are needed to accomplish the goal and the user expects that work.
-After saving the goal file, continue working toward the goal as appropriate.
+After saving the goal file, stop and summarize the persisted goal. Do not begin implementation unless the user explicitly requested implementation in the same command.

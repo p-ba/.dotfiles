@@ -4,6 +4,7 @@
 [core]
 	editor = nvim
 	excludesfile = ~/.gitignore
+	pager = hunk pager
 [diff]
     tool = smerge
 	algorithm = histogram

@@ -94,6 +94,22 @@ function M.setup()
 
             client.server_capabilities.semanticTokensProvider = nil
 
+            if client.name == "gopls" then
+                local locations = require("lsp_locations")
+                if client:supports_method("textDocument/definition") then
+                    vim.keymap.set("n", "gd", locations.definition, {
+                        buffer = args.buf,
+                        desc = "Go to non-generated definition",
+                    })
+                end
+                if client:supports_method("textDocument/implementation") then
+                    vim.keymap.set("n", "gri", locations.implementation, {
+                        buffer = args.buf,
+                        desc = "Go to non-generated implementation",
+                    })
+                end
+            end
+
             for _, lsp in ipairs(format_on_save) do
                 if lsp == client.name and client:supports_method("textDocument/formatting") then
                     local format_autocmd = vim.api.nvim_create_autocmd("BufWritePre", {

@@ -135,6 +135,16 @@ end
 -- Set the custom tagfunc.
 vim.o.tagfunc = "v:lua.dumbjump_tagfunc"
 
+function filtered_lsp_tagfunc(pattern, flags)
+    local results = vim.lsp.tagfunc(pattern, flags)
+    if vim.bo.filetype ~= "go" or not string.find(flags, "c") or type(results) ~= "table" then
+        return results
+    end
+
+    local filtered = require("lsp_locations").filter_items(results)
+    return filtered
+end
+
 -- Let the LSP hijack the tagfunc, if supported
 vim.api.nvim_create_autocmd('LspAttach', {
     callback = function(ev)
@@ -143,13 +153,19 @@ vim.api.nvim_create_autocmd('LspAttach', {
             return
         end
         if client:supports_method('textDocument/definition') then
-            vim.o.tagfunc = "v:lua.vim.lsp.tagfunc"
+            vim.bo[ev.buf].tagfunc = "v:lua.filtered_lsp_tagfunc"
         end
     end,
 })
 
 vim.api.nvim_create_autocmd('LspDetach', {
-    callback = function()
-        vim.o.tagfunc = "v:lua.dumbjump_tagfunc"
+    callback = function(ev)
+        for _, client in ipairs(vim.lsp.get_clients({ bufnr = ev.buf })) do
+            if client.id ~= ev.data.client_id and client:supports_method('textDocument/definition') then
+                return
+            end
+        end
+
+        vim.bo[ev.buf].tagfunc = "v:lua.dumbjump_tagfunc"
     end,
 })

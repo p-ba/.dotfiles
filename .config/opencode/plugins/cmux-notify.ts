@@ -1,6 +1,6 @@
 import { execFile } from "node:child_process"
 import { promisify } from "node:util"
-import { Plugin } from "@opencode-ai/plugin/v2"
+import { Plugin } from "@opencode-ai/plugin"
 
 const NOTIFIED_SESSIONS = new Set<string>()
 const execFileAsync = promisify(execFile)
