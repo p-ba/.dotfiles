@@ -1,32 +1,18 @@
 {
     "$schema": "https://opencode.ai/config.json",
+    "default_agent": "architect",
     "plugins": [
         "./plugins/cmux-notify.ts"
     ],
     "permissions": [
         {
-            "action": "external_directory",
+            "action": "shell",
             "resource": "*",
             "effect": "ask"
         },
         {
-            "action": "shell",
-            "resource": "git push *",
-            "effect": "ask"
-        },
-        {
-            "action": "shell",
-            "resource": "git reset --hard *",
-            "effect": "ask"
-        },
-        {
-            "action": "shell",
-            "resource": "git clean *",
-            "effect": "ask"
-        },
-        {
-            "action": "shell",
-            "resource": "rm -rf *",
+            "action": "external_directory",
+            "resource": "*",
             "effect": "ask"
         }
     ],

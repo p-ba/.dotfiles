@@ -45,12 +45,10 @@ run() {
 link_codex() {
   local source="$DOTFILES_DIR/.codex"
   local target="$HOME/.codex"
-  local config_base="$source/config.base.toml"
-  local config_target="$target/config.toml"
   local name source_entry target_entry backup_target
   local target_will_be_replaced=0
 
-  if [[ ! -f "$source/AGENTS.md" || ! -d "$source/agents" || ! -f "$config_base" ]]; then
+  if [[ ! -f "$source/AGENTS.md" || ! -d "$source/agents" ]]; then
     echo "skip incomplete Codex source: $source" >&2
     return 0
   fi
@@ -97,13 +95,9 @@ link_codex() {
     run ln -s "$source_entry" "$target_entry"
   done
 
-  if [[ "$DRY_RUN" == 1 && "$target_will_be_replaced" == 1 ]] ||
-     [[ ! -e "$config_target" && ! -L "$config_target" ]]; then
-    echo "seed: $config_target <- $config_base"
-    run cp "$config_base" "$config_target"
-  else
-    echo "ok: preserving local Codex config: $config_target"
-  fi
+  # Codex owns ~/.codex/config.toml as local runtime state; the dotfiles repo
+  # only manages durable guidance (AGENTS.md) and custom agents.
+  echo "ok: Codex config stays local: $target/config.toml"
 }
 
 link_one() {

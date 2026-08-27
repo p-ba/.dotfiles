@@ -55,7 +55,7 @@ fzf_tmux() {
 zle -N fzf_tmux
 bindkey '^F' fzf_tmux
 
-alias oc="opencode2"
+alias oc="opencode2 --yolo"
 alias copilot="copilot --yolo"
 alias dc="docker compose"
 alias de="docker exec -it"
@@ -68,10 +68,7 @@ alias /bin/bash='/opt/homebrew/bin/bash'
 alias vim=nvim
 export EDITOR=nvim
 export VISUAL=nvim
-# Run Codex with its standard approval safeguards by default.
-alias codex='command codex'
 alias c=codex
-alias ca='command codex --approve-for-me'
 
 __docker_exec() {
     CONTAINER_ID=$(docker ps | fzf | awk '{print $1}')

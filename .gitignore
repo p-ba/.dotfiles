@@ -30,13 +30,12 @@ node_modules/
 .pi/context-mode/sessions/
 .pi/context-mode/content/
 
-# Codex local auth/config/runtime state; keep portable guidance and baselines
+# Codex local auth/config/runtime state; keep only durable guidance and roles
 .codex/*
 !.codex/AGENTS.md
 !.codex/agents/
 .codex/agents/*
 !.codex/agents/*.toml
-!.codex/config.base.toml
 
 # Emacs runtime/build outputs; .emacs.d/.gitignore further narrows tracked files
 .emacs.d/eln-cache/

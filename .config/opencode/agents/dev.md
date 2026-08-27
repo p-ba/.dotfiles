@@ -1,7 +1,7 @@
 ---
-description: Implements focused tasks from Architect using GPT-5.6-Luna with medium reasoning, following the provided plan and reporting verification results.
+description: Implements focused tasks from Architect, following the provided plan and reporting verification results.
 mode: subagent
-model: "openai/gpt-5.6-luna#medium"
+model: "openai/gpt-5.6-terra#medium"
 steps: 24
 permissions:
   - action: "*"
@@ -22,15 +22,21 @@ permissions:
   - action: glob
     resource: "*"
     effect: allow
-  - action: grep
-    resource: "*"
-    effect: allow
   - action: edit
     resource: "*"
     effect: allow
+  - action: edit
+    resource: "*.env"
+    effect: ask
+  - action: edit
+    resource: "*.env.*"
+    effect: ask
+  - action: edit
+    resource: "*.env.example"
+    effect: allow
   - action: shell
     resource: "*"
-    effect: allow
+    effect: ask
   - action: shell
     resource: "git push *"
     effect: deny
@@ -73,4 +79,4 @@ Workflow:
 5. Run the requested verification, or the most relevant available verification if none was specified.
 6. Report back in this format: outcome; files changed; acceptance criteria satisfied; exact verification commands and results; blockers, risks, or out-of-scope discoveries.
 
-Do not launch subagents or ask the user routine questions. Report a concrete blocker to Architect instead. If Architect sends follow-ups after review, address only those follow-ups unless fixing them reveals a directly related issue.
+Do not launch subagents, ask the user routine questions, or use shell or another tool to bypass a sensitive-file read approval. Report a concrete blocker to Architect instead. If Architect sends follow-ups after review, address only those follow-ups unless fixing them reveals a directly related issue.

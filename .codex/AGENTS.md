@@ -1,22 +1,35 @@
 # Default delegation policy
 
-Use subagents aggressively for concrete, bounded work that can proceed independently while the main thread continues useful work. This is the default workflow, not an optional mode.
+Delegate concrete, bounded work when there is a clear benefit from context isolation, independent judgment, or parallel speed. Context isolation does not require parallelism: sequential exploration, implementation, review, and validation may use separate agents when their intermediate output does not belong in the primary thread. Do not delegate micro-tasks or merely create activity.
 
-Keep the main thread responsible for clarification, planning, orchestration, critical-path decisions, reviewing the actual worktree, and synthesizing the final result. Delegate repository exploration, independent implementation slices, test or log analysis, focused reviews, and targeted validation whenever they are substantial enough to justify a separate worker.
+The primary thread owns user requirements and clarification, approval boundaries, task decomposition, cross-lane decisions, final verification, and the final response. Keep its direct work to low-output triage, integration decisions, and small decisive checks. Delegate broad searches, multi-file investigation, large diff review, test or log output, repeated diagnostics, and other context-heavy work. Keep only tiny mechanical changes, immediate blockers, and genuinely indivisible work on the primary thread. Do not duplicate work assigned to an agent.
 
-Keep work on the main thread when it is a tiny mechanical change, an immediate blocker for the next action, tightly coupled to current reasoning, or likely to overlap another writer. Do not delegate merely to create activity, and do not duplicate work already assigned to a subagent.
+Only the primary thread spawns subagents by default. For a large context-heavy task, it may authorize one `lead` agent to spawn one nested layer of specialists within an exact scope. Other children must not spawn agents unless their brief explicitly authorizes it.
 
-## Safe parallelism
+## Primary-thread context budget
 
-Maximize useful parallelism within the available thread limit:
+- Before a direct tool call, consider whether its raw output is necessary for a primary-thread decision. Delegate calls likely to produce exploratory branches, long source excerpts, logs, stack traces, or broad test output.
+- Give fresh agents a self-contained brief and normally use no inherited turns. Use a small recent-turn window only when reproducing the relevant requirements would be less reliable; use full history only when continuity itself is essential.
+- Keep lane-local follow-up in the same agent with a follow-up task. Ask for deltas instead of restating the task or spawning a replacement agent.
+- Require decision-relevant evidence packets. Do not request raw command transcripts, full diffs, or repeated background unless a specific unresolved decision needs them.
+- Do not poll agents repeatedly or narrate unchanged state. Wait when their result is required for the next decision.
 
-- Launch independent reconnaissance or disjoint implementation tasks together.
-- Give concurrent writers disjoint file ownership. Never let agents edit overlapping files concurrently.
-- Prefer separate worktrees for independent, write-heavy chats; retain explicit file ownership even when worktrees are used.
-- Serialize coupled work and overlapping changes.
-- Continue non-overlapping main-thread work while subagents run. Wait only when their result is required for the next critical-path action.
-- Review the actual diff and run the final critical checks on the main thread; do not trust summaries as proof.
-- Use the `validator` agent for an independent, read-only check when it can run alongside remaining review or integration work.
+## Progressive delegation and safe parallelism
+
+Scale delegation to context volume, uncertainty, independence, and risk instead of applying a fixed sequence:
+
+1. Perform only minimal direct triage needed to classify the task, such as status, a diff stat, or an exact symbol lookup.
+2. Use an `explorer` before broad source reading or open-ended discovery. Exploration may be sequential on the critical path; the agent returns locations, facts, and unresolved questions rather than its search transcript.
+3. Delegate implementation after file ownership, constraints, and acceptance criteria are clear. Prefer one `worker` and one writer per checkout. Use concurrent writers only when their code, tests, generated state, and validation cannot overlap.
+4. For large, ambiguous, or cross-cutting work, prefer one `lead` that owns the bounded outcome, coordinates an explicitly authorized nested layer, and returns one synthesized packet to the primary thread.
+5. Use a `reviewer` when correctness, security, API, migration, concurrency, or regression risk warrants independent judgment.
+6. Use a `validator` for non-trivial checks, output-heavy tests, repeated verification, or any validation whose output is not predictably small. The primary may run small focused checks needed for final confidence.
+7. Verify through cited evidence, an independently reported verdict, and targeted inspection of the highest-risk changed state. Do not replay every agent command or reread the entire diff merely to duplicate completed work.
+8. Route fixes and rechecks back to the agent that owns that lane, request only the delta, then report the integrated result.
+
+Sequential delegation is appropriate for context isolation. Parallelize only stable, independent lanes. Ordinarily use one or two active children per coordinator; use three only when the lanes are genuinely independent and the coordination cost is justified.
+
+Use the shared checkout for short, bounded changes with explicit ownership and at most one active writer. Use primary-managed separate worktrees for multiple long-running writers, write-heavy work, overlapping build or generated state, or likely integration conflicts. The primary owns cross-worktree integration and cleanup; a `lead` may integrate only its explicitly assigned scope in a shared checkout.
 
 ## Delegated model routing
 
@@ -24,33 +37,23 @@ Use the configured custom roles for all delegated work. Their agent files pin th
 
 Use these custom roles:
 
-- `worker`: implementation and accepted fixes.
+- `lead`: demanding context-heavy coordination and cross-cutting delivery within a bounded scope.
+- `worker`: fully specified implementation and accepted fixes.
 - `explorer`: targeted read-only discovery.
 - `reviewer`: independent read-only review for correctness, security, regressions, and missing tests.
-- `validator`: narrow read-only validation.
+- `validator`: focused validation of the integrated target.
 - `default`: other bounded delegated work.
 
-If a configured role is unavailable or does not use the expected model, do not silently substitute a more expensive model. Continue on the main thread or report the routing limitation.
+If a configured role is unavailable or does not use the expected model, do not silently substitute another model. Use the nearest suitable configured role only when it still meets the task's acceptance criteria; otherwise continue with a deliberately reduced scope or report the routing limitation.
 
 ## Delegation brief
 
-Every fresh delegation should include:
+Give each fresh delegation a concise, self-contained brief containing:
 
-- Objective and why the result matters.
-- Known facts, assumptions, and paths already ruled out.
-- Exact scope, ownership, and files the agent may or may not edit.
-- Constraints and observable acceptance criteria.
-- Focused validation to run.
-- The requested final report.
+- Objective and expected deliverable.
+- Exact scope, file ownership, and excluded paths.
+- Observable acceptance criteria and focused validation.
+- Relevant decisions, constraints, and the target diff or immutable snapshot when applicable.
+- Whether edits or one nested delegation layer are authorized.
 
-Require the final report to use this shape:
-
-```text
-Status: DONE | BLOCKED | NEEDS DECISION
-Paths: /absolute/relevant/path (or None)
-Validation: commands and pass/fail results (or Not run: reason)
-Unresolved risks: concise list (or None)
-Report: concise findings, decisions, and next steps
-```
-
-Subagents return findings in their final response and must not create report or analysis files.
+Do not paste the full conversation, raw logs, or a full diff into the brief when a compact statement or snapshot reference is sufficient. The role definitions own the final evidence-packet format; do not repeat that schema in every brief. Subagents return findings in their final response and must not create report or analysis files.
