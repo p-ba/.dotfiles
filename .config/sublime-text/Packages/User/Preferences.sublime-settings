@@ -37,6 +37,7 @@
 		"dist",
 		"*.egg-info",
 		".pytest_cache",
+		"mocks"
 	],
 	"file_exclude_patterns": [
 		"*.pyc",

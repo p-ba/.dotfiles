@@ -37,7 +37,6 @@ node_modules/
 .codex/agents/*
 !.codex/agents/*.toml
 !.codex/config.base.toml
-!.codex/hooks.json
 
 # Emacs runtime/build outputs; .emacs.d/.gitignore further narrows tracked files
 .emacs.d/eln-cache/

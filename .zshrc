@@ -56,6 +56,7 @@ zle -N fzf_tmux
 bindkey '^F' fzf_tmux
 
 alias oc="opencode2"
+alias copilot="copilot --yolo"
 alias dc="docker compose"
 alias de="docker exec -it"
 alias tree="tree --dirsfirst"
