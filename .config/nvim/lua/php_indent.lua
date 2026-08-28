@@ -32,7 +32,8 @@ local function strip_trailing_line_comment(line)
   return s
 end
 
----Multiline block after `<?php` on a line that does not close with `?>` — next line aligns with that tag (spec: mixed HTML/PHP).
+---Multiline block after `<?php` on a line that does not close with `?>`.
+---The next line aligns with that tag (spec: mixed HTML/PHP).
 ---@param prev_line string
 ---@return boolean
 local function continues_after_open_php_tag(prev_line)
@@ -98,12 +99,7 @@ local function looks_like_dedent_line(line)
   if t:match("^%}%s*$") then
     return true
   end
-  if
-    t:match("^%]%s*;%s*$")
-    or t:match("^%]%s*,%s*$")
-    or t:match("^%]%s*%)%s*;%s*$")
-    or t:match("^%]%s*%)%s*,%s*$")
-  then
+  if t:match("^%]%s*;%s*$") or t:match("^%]%s*,%s*$") or t:match("^%]%s*%)%s*;%s*$") or t:match("^%]%s*%)%s*,%s*$") then
     return true
   end
   return false

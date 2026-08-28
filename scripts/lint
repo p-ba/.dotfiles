@@ -1,0 +1,213 @@
+#!/usr/bin/env bash
+set -uo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$REPO_ROOT" || exit 1
+
+failures=0
+missing=()
+
+heading() {
+  printf '\n==> %s\n' "$1"
+}
+
+run() {
+  printf '  +'
+  printf ' %q' "$@"
+  printf '\n'
+  if ! "$@"; then
+    failures=$((failures + 1))
+  fi
+}
+
+run_quiet() {
+  printf '  +'
+  printf ' %q' "$@"
+  printf ' >/dev/null\n'
+  if ! "$@" >/dev/null; then
+    failures=$((failures + 1))
+  fi
+}
+
+need() {
+  if command -v "$1" >/dev/null 2>&1; then
+    return 0
+  fi
+
+  printf '  ! missing required tool: %s\n' "$1" >&2
+  missing+=("$1")
+  return 1
+}
+
+repo_files() {
+  git ls-files --cached --others --exclude-standard -z -- "$@" |
+    while IFS= read -r -d '' file; do
+      [[ -f "$file" ]] && printf '%s\0' "$file"
+    done
+}
+
+shell_files=(.bashrc .profile scripts/lint)
+while IFS= read -r -d '' file; do shell_files+=("$file"); done < <(repo_files '*.sh')
+
+zsh_files=(.zshenv .zshrc scripts/fzf_tmux)
+while IFS= read -r -d '' file; do zsh_files+=("$file"); done < <(repo_files '*.zsh')
+
+lua_files=()
+while IFS= read -r -d '' file; do lua_files+=("$file"); done < <(repo_files '*.lua')
+
+elisp_files=()
+while IFS= read -r -d '' file; do elisp_files+=("$file"); done < <(repo_files '*.el')
+
+python_files=()
+while IFS= read -r -d '' file; do python_files+=("$file"); done < <(repo_files '*.py')
+
+typescript_files=()
+while IFS= read -r -d '' file; do typescript_files+=("$file"); done < <(repo_files '*.ts')
+
+json_files=()
+while IFS= read -r -d '' file; do json_files+=("$file"); done < <(repo_files '*.json')
+
+toml_files=()
+while IFS= read -r -d '' file; do toml_files+=("$file"); done < <(repo_files '*.toml')
+
+markdown_files=()
+while IFS= read -r -d '' file; do markdown_files+=("$file"); done < <(repo_files '*.md')
+
+yaml_files=()
+while IFS= read -r -d '' file; do yaml_files+=("$file"); done < <(repo_files '*.yaml' '*.yml')
+
+sublime_json_files=()
+while IFS= read -r -d '' file; do sublime_json_files+=("$file"); done \
+  < <(
+    repo_files \
+      '*.sublime-build' '*.sublime-color-scheme' '*.sublime-commands' '*.sublime-completions' \
+      '*.sublime-keymap' '*.sublime-macro' '*.sublime-menu' '*.sublime-project' '*.sublime-settings' \
+      '*.sublime-theme'
+  )
+
+sublime_xml_files=()
+while IFS= read -r -d '' file; do sublime_xml_files+=("$file"); done < <(repo_files '*.sublime-snippet')
+
+line_checked_files=()
+while IFS= read -r -d '' file; do line_checked_files+=("$file"); done < <(
+  repo_files \
+    '*.el' '*.json' '*.lua' '*.md' '*.py' '*.rules' '*.sh' '*.sublime-build' \
+    '*.sublime-color-scheme' '*.sublime-commands' '*.sublime-completions' '*.sublime-keymap' \
+    '*.sublime-macro' '*.sublime-menu' '*.sublime-project' '*.sublime-settings' '*.sublime-snippet' \
+    '*.sublime-theme' '*.toml' '*.ts' '*.yaml' '*.yml' '*.zsh' \
+    '.bashrc' '.config/sublime-text/Packages/User/.neovintageousrc' '.editorconfig' '.gitconfig' \
+    '.gitconfig.local.example' '.gitignore' '.profile' '.ripgreprc' '.shellcheckrc' '.tmux.conf' \
+    '.zshenv' '.zshrc' '*/.gitignore' 'scripts/fzf_tmux'
+)
+
+heading "Shell and Zsh"
+if need bash; then
+  for file in "${shell_files[@]}"; do run bash -n -- "$file"; done
+fi
+if need shellcheck; then run shellcheck -s bash -- "${shell_files[@]}"; fi
+if need zsh; then
+  for file in "${zsh_files[@]}"; do run zsh -n -- "$file"; done
+fi
+
+heading "Lua"
+if need stylua; then run stylua --check -- "${lua_files[@]}"; fi
+
+heading "Emacs Lisp"
+if need emacs; then
+  elisp_check='(with-temp-buffer (emacs-lisp-mode)'
+  elisp_check+=' (insert-file-contents (getenv "LINT_ELISP_FILE")) (check-parens))'
+  for file in "${elisp_files[@]}"; do
+    run env LINT_ELISP_FILE="$file" emacs --batch -Q --eval "$elisp_check"
+  done
+fi
+
+heading "TypeScript"
+if need deno; then
+  run deno lint --config deno.json -- "${typescript_files[@]}"
+fi
+if need prettier; then run prettier --check -- "${typescript_files[@]}"; fi
+
+heading "Python"
+if need ruff; then
+  run ruff check --config ruff.toml -- "${python_files[@]}"
+fi
+
+heading "JSON"
+if need python3; then
+  for file in "${json_files[@]}"; do run python3 -m json.tool -- "$file" /dev/null; done
+fi
+
+heading "TOML"
+if need taplo; then run taplo format --check -- "${toml_files[@]}"; fi
+
+heading "Markdown"
+if need markdownlint-cli2; then run markdownlint-cli2 -- "${markdown_files[@]}"; fi
+if need prettier; then run prettier --check -- "${markdown_files[@]}"; fi
+
+heading "YAML"
+if [[ ${#yaml_files[@]} -gt 0 ]]; then
+  if need yamllint; then run yamllint -c .yamllint.yaml -- "${yaml_files[@]}"; fi
+  if need prettier; then run prettier --check -- "${yaml_files[@]}"; fi
+fi
+
+heading "Sublime Text"
+if need prettier; then
+  for file in "${sublime_json_files[@]}"; do run_quiet prettier --parser json5 -- "$file"; done
+fi
+if need xmllint; then
+  # xmllint has no end-of-options marker; repository-relative paths always
+  # begin with a managed directory rather than a dash.
+  for file in "${sublime_xml_files[@]}"; do run xmllint --noout "$file"; done
+fi
+
+heading "Native configuration"
+if need git; then
+  run_quiet git config --file .gitconfig --list
+  run_quiet git config --file .gitconfig.local.example --list
+fi
+if need rg; then
+  run_quiet env RIPGREP_CONFIG_PATH="$REPO_ROOT/.ripgreprc" rg --files -- "$REPO_ROOT"
+fi
+if need tmux; then
+  # A short-lived isolated server makes tmux parse its configuration without
+  # touching the user's running tmux server.
+  tmux_socket="dotfiles-lint-$$"
+  run tmux -L "$tmux_socket" -f "$REPO_ROOT/.tmux.conf" new-session -d -s lint
+  run tmux -L "$tmux_socket" kill-server
+fi
+
+heading "Line length"
+for file in "${line_checked_files[@]}"; do
+  case "$file" in
+    *.md) continue ;; # markdownlint applies the documented Markdown exceptions.
+    */package-lock.json|*/nvim-pack-lock.json) continue ;; # Generated dependency state.
+  esac
+
+  if ! awk -v limit=120 '
+    {
+      exempt = allow_next
+      allow_next = ($0 ~ /line-length-exception: next-line/)
+      if (length($0) > limit && !exempt) {
+        print FILENAME ":" FNR ": line exceeds " limit " characters"
+        bad = 1
+      }
+    }
+    END { exit bad }
+  ' "$file"; then
+    failures=$((failures + 1))
+  fi
+done
+
+if [[ ${#missing[@]} -gt 0 ]]; then
+  printf '\nMissing tools: %s\n' "${missing[*]}" >&2
+  printf 'See README.md for local installation commands.\n' >&2
+  failures=$((failures + ${#missing[@]}))
+fi
+
+if [[ $failures -ne 0 ]]; then
+  printf '\nLint failed with %d problem(s).\n' "$failures" >&2
+  exit 1
+fi
+
+printf '\nAll lint checks passed.\n'

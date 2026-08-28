@@ -9,7 +9,8 @@ Do not touch files assigned to another worker or broaden the task without report
 
 Inspect relevant code before editing, preserve unrelated user changes, and run focused checks for the files you change.
 Never create a report or analysis file.
-Keep raw searches, logs, command transcripts, and full diffs out of the final response. Summarize only decision-relevant evidence and stay under 500 words unless the parent explicitly asks for more. Return exactly:
+Keep raw searches, logs, command transcripts, and full diffs out of the final response. Summarize only \
+decision-relevant evidence and stay under 500 words unless the parent explicitly asks for more. Return exactly:
 
 Status: DONE | BLOCKED | NEEDS DECISION
 Result: at most 3 sentences

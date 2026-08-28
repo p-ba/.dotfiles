@@ -1,0 +1,58 @@
+name: Lint
+
+on:
+  pull_request:
+  push:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24.4.1
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.13.7"
+
+      - uses: astral-sh/setup-uv@c7f87aa956e4c323abf06d5dec078e358f6b4d04 # v6.0.0
+        with:
+          version: "0.8.14"
+
+      - uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2.0.5
+        with:
+          deno-version: v2.5.0
+
+      - name: Install syntax-validator runtimes
+        # These packages follow the pinned Ubuntu 24.04 runner; dedicated lint
+        # tools are version-pinned below.
+        run: sudo apt-get update && sudo apt-get install --yes emacs-nox libxml2-utils ripgrep tmux zsh
+
+      - name: Install pinned ShellCheck
+        env:
+          SHELLCHECK_VERSION: v0.11.0
+          SHELLCHECK_SHA256: 8c3be12b05d5c177a04c29e3c78ce89ac86f1595681cab149b65b97c4e227198
+        run: |
+          archive="shellcheck-${SHELLCHECK_VERSION}.linux.x86_64.tar.xz"
+          url="https://github.com/koalaman/shellcheck/releases/download/${SHELLCHECK_VERSION}/${archive}"
+          curl --fail --location --silent --show-error --output "/tmp/${archive}" "${url}"
+          echo "${SHELLCHECK_SHA256}  /tmp/${archive}" | sha256sum --check
+          tar --extract --xz --file "/tmp/${archive}" --directory /tmp
+          sudo install "/tmp/shellcheck-${SHELLCHECK_VERSION}/shellcheck" /usr/local/bin/shellcheck
+
+      - name: Install pinned lint tools
+        run: |
+          rustup toolchain install 1.89.0 --profile minimal --no-self-update
+          cargo +1.89.0 install stylua --version 2.5.2 --locked
+          npm install --global @taplo/cli@0.7.0 markdownlint-cli2@0.18.1 prettier@3.8.1
+          uv tool install ruff==0.12.10
+          uv tool install yamllint==1.37.1
+
+      - name: Run repository lint
+        run: scripts/lint

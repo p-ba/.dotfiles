@@ -47,39 +47,9 @@ case "$(uname -s)" in
   Darwin) export PATH="/Applications/Sublime Text.app/Contents/SharedSupport/bin:$PATH" ;;
 esac
 
-# Opening a path via subl replaces all existing Sublime Text windows. The
-# command is provided by Packages/User/SublimeBehavior.py.
+# Use Sublime Text's normal window reuse; ProjectSidebarRestore adds opened roots.
 subl() {
-    local argument has_path=0 skip_next=0 after_double_dash=0
-
-    for argument in "$@"; do
-        if [ "$skip_next" -eq 1 ]; then
-            skip_next=0
-            continue
-        fi
-
-        if [ "$after_double_dash" -eq 1 ]; then
-            has_path=1
-            break
-        fi
-
-        case "$argument" in
-            --) after_double_dash=1 ;;
-            --project) has_path=1; skip_next=1 ;;
-            --project=*) has_path=1 ;;
-            --command) skip_next=1 ;;
-            --command=*) ;;
-            -) ;;
-            -*) ;;
-            *) has_path=1; break ;;
-        esac
-    done
-
-    if [ "$has_path" -eq 1 ]; then
-        command subl --new-window --command close_other_sublime_windows "$@"
-    else
-        command subl "$@"
-    fi
+    command subl "$@"
 }
 
 export PATH="$HOME/go/bin:$PATH"

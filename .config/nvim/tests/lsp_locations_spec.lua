@@ -1,7 +1,7 @@
 local function assert_equal(actual, expected, message)
-    if actual ~= expected then
-        error((message or "values differ") .. (": expected %s, got %s"):format(expected, actual), 2)
-    end
+  if actual ~= expected then
+    error((message or "values differ") .. (": expected %s, got %s"):format(expected, actual), 2)
+  end
 end
 
 local script_path = debug.getinfo(1, "S").source:sub(2)
@@ -13,11 +13,7 @@ local locations = require("lsp_locations")
 assert_equal(locations.is_generated_go_file("/project/graph/model.gen.go"), true, ".gen.go file")
 assert_equal(locations.is_generated_go_file("/project/service_mock.go"), true, "_mock.go file")
 assert_equal(locations.is_generated_go_file("/project/generated/model.go"), true, "generated directory")
-assert_equal(
-    locations.is_generated_go_file("/project/app/api/graphql/graph/model.go"),
-    true,
-    "GraphQL graph directory"
-)
+assert_equal(locations.is_generated_go_file("/project/app/api/graphql/graph/model.go"), true, "GraphQL graph directory")
 assert_equal(locations.is_generated_go_file("/project/service.go"), false, "regular Go file")
 assert_equal(locations.is_generated_go_file("/project/generated/client.ts"), false, "non-Go file")
 
@@ -27,9 +23,9 @@ assert_equal(locations.is_generated_go_file(generated_file), true, "generated he
 vim.fn.delete(generated_file)
 
 local filtered, excluded = locations.filter_items({
-    { filename = "/project/generated/model.go" },
-    { filename = "/project/model.go" },
-    { filename = "/project/client.ts" },
+  { filename = "/project/generated/model.go" },
+  { filename = "/project/model.go" },
+  { filename = "/project/client.ts" },
 })
 assert_equal(#filtered, 2, "filtered location count")
 assert_equal(excluded, 1, "excluded location count")

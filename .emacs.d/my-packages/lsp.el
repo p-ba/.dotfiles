@@ -29,7 +29,9 @@
   (eglot-stay-out-of '(flymake))
   (eglot-ignored-server-capabilities '(:documentHighlightProvider :inlayHintProvider :insertReplaceSupport))
   :config
-  (add-to-list 'eglot-server-programs `(vue-mode . ("typescript-language-server" "--stdio" :initializationOptions ,vue-ts-options)))
+  (add-to-list
+   'eglot-server-programs
+   `(vue-mode . ("typescript-language-server" "--stdio" :initializationOptions ,vue-ts-options)))
   (add-to-list 'eglot-server-programs '(swift-mode . ("xcrun" "sourcekit-lsp")))
   (add-to-list 'eglot-server-programs '(php-mode "intelephense" "--stdio"))
   (add-to-list 'eglot-server-programs '(php-ts-mode "intelephense" "--stdio"))

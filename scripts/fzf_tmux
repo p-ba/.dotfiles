@@ -9,7 +9,10 @@ _dotfiles_fzf_tmux() {
     local selected r_dir workspace_json workspace_refs workspace_ref session_name
 
     # A cancelled or failed picker must not change the caller's shell state.
-    if ! selected="$(find "$HOME/.config" "/Volumes/Projects/alchemy" "/Volumes/Projects" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | fzf)"; then
+    if ! selected="$(
+        find "$HOME/.config" "/Volumes/Projects/alchemy" "/Volumes/Projects" \
+            -mindepth 1 -maxdepth 1 -type d 2>/dev/null | fzf
+    )"; then
         return 0
     fi
     [[ -n "$selected" ]] || return 0
@@ -22,10 +25,20 @@ _dotfiles_fzf_tmux() {
     # Always use cmux when available: Ctrl-F should find or create a project
     # workspace from any terminal, regardless of its TERM value.
     if command -v cmux >/dev/null 2>&1; then
+        local workspace_filter='
+.workspaces[]?
+| select(
+    (.current_directory // "") == $dir
+    or (.current_directory // "") == $selected
+    or ((.current_directory // "") | startswith($dir + "/"))
+    or ((.current_directory // "") | startswith($selected + "/"))
+)
+| (.ref // empty)'
+
         if ! workspace_json="$(cmux workspace list --json 2>/dev/null)" ||
             ! command -v jq >/dev/null 2>&1 ||
             ! workspace_refs="$(printf '%s\n' "$workspace_json" | jq -r --arg dir "$r_dir" --arg selected "$selected" \
-                '.workspaces[]? | select((.current_directory // "") == $dir or (.current_directory // "") == $selected or ((.current_directory // "") | startswith($dir + "/")) or ((.current_directory // "") | startswith($selected + "/"))) | (.ref // empty)' 2>/dev/null)"; then
+                "$workspace_filter" 2>/dev/null)"; then
             cmux workspace create --cwd "$selected" --focus true >/dev/null
             return $?
         fi

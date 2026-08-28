@@ -5,149 +5,149 @@ local managed_servers = { "clangd", "gopls", "vtsls", "lua_ls", "eslint" }
 local format_autocmds = {}
 
 function M.setup()
-    if did_setup then
+  if did_setup then
+    return
+  end
+  did_setup = true
+
+  vim.pack.add({
+    "https://github.com/neovim/nvim-lspconfig",
+    "https://github.com/mason-org/mason.nvim",
+    "https://github.com/mason-org/mason-lspconfig.nvim",
+  })
+
+  require("mason").setup({
+    PATH = "prepend",
+  })
+
+  require("mason-lspconfig").setup({
+    ensure_installed = managed_servers,
+    automatic_enable = managed_servers,
+  })
+
+  local format_group = vim.api.nvim_create_augroup("user.lsp.format", { clear = true })
+
+  local capabilities = vim.tbl_deep_extend("force", vim.lsp.protocol.make_client_capabilities(), {
+    textDocument = {
+      completion = {
+        completionItem = {
+          -- insertReplaceSupport = false,
+        },
+      },
+      foldingRange = {
+        dynamicRegistration = false,
+        lineFoldingOnly = true,
+      },
+    },
+  })
+
+  vim.lsp.config("*", {
+    capabilities = capabilities,
+  })
+
+  vim.lsp.config("sourcekit", {
+    cmd = { "sourcekit-lsp" },
+    filetypes = { "swift", "objc", "objcpp", "c", "cpp" },
+    root_markers = { "Package.swift", "compile_commands.json", ".git" },
+  })
+
+  -- Relax TypeScript checking for files outside a tsconfig/jsconfig project.
+  -- A project's own compiler options still take precedence.
+  vim.lsp.config("vtsls", {
+    settings = {
+      ["js/ts"] = {
+        implicitProjectConfig = {
+          strict = false,
+        },
+      },
+    },
+  })
+
+  vim.lsp.config("lua_ls", {
+    settings = {
+      Lua = {
+        runtime = {
+          version = "LuaJIT",
+        },
+        diagnostics = {
+          globals = { "vim" },
+        },
+        workspace = {
+          library = vim.api.nvim_get_runtime_file("", true),
+          checkThirdParty = false,
+        },
+        telemetry = {
+          enable = false,
+        },
+      },
+    },
+  })
+
+  vim.api.nvim_create_autocmd("LspAttach", {
+    group = vim.api.nvim_create_augroup("user.lsp", {}),
+    callback = function(args)
+      local format_on_save = { "eslint", "gopls", "lua_ls" }
+      local client = vim.lsp.get_client_by_id(args.data.client_id)
+      if not client then
         return
-    end
-    did_setup = true
+      end
 
-    vim.pack.add({
-        "https://github.com/neovim/nvim-lspconfig",
-        "https://github.com/mason-org/mason.nvim",
-        "https://github.com/mason-org/mason-lspconfig.nvim",
-    })
+      client.server_capabilities.semanticTokensProvider = nil
 
-    require("mason").setup({
-        PATH = "prepend",
-    })
+      if client.name == "gopls" then
+        local locations = require("lsp_locations")
+        if client:supports_method("textDocument/definition") then
+          vim.keymap.set("n", "gd", locations.definition, {
+            buffer = args.buf,
+            desc = "Go to non-generated definition",
+          })
+        end
+        if client:supports_method("textDocument/implementation") then
+          vim.keymap.set("n", "gri", locations.implementation, {
+            buffer = args.buf,
+            desc = "Go to non-generated implementation",
+          })
+        end
+      end
 
-    require("mason-lspconfig").setup({
-        ensure_installed = managed_servers,
-        automatic_enable = managed_servers,
-    })
+      for _, lsp in ipairs(format_on_save) do
+        if lsp == client.name and client:supports_method("textDocument/formatting") then
+          local format_autocmd = vim.api.nvim_create_autocmd("BufWritePre", {
+            group = format_group,
+            buffer = args.buf,
+            callback = function()
+              vim.lsp.buf.format({ bufnr = args.buf, id = client.id, timeout_ms = 1000 })
+            end,
+          })
+          format_autocmds[args.buf] = format_autocmds[args.buf] or {}
+          format_autocmds[args.buf][client.id] = format_autocmd
+        end
+      end
+      if client:supports_method("textDocument/completion") then
+        vim.lsp.completion.enable(true, client.id, args.buf, { autotrigger = false })
+      end
+    end,
+  })
 
-    local format_group = vim.api.nvim_create_augroup("user.lsp.format", { clear = true })
+  vim.api.nvim_create_autocmd("LspDetach", {
+    callback = function(args)
+      local buffer_autocmds = format_autocmds[args.buf]
+      if not buffer_autocmds then
+        return
+      end
 
-    local capabilities = vim.tbl_deep_extend("force", vim.lsp.protocol.make_client_capabilities(), {
-        textDocument = {
-            completion = {
-                completionItem = {
-                    -- insertReplaceSupport = false,
-                },
-            },
-            foldingRange = {
-                dynamicRegistration = false,
-                lineFoldingOnly = true
-            }
-        }
-    })
+      local format_autocmd = buffer_autocmds[args.data.client_id]
+      if not format_autocmd then
+        return
+      end
 
-    vim.lsp.config("*", {
-        capabilities = capabilities,
-    })
-
-    vim.lsp.config("sourcekit", {
-        cmd = { "sourcekit-lsp" },
-        filetypes = { "swift", "objc", "objcpp", "c", "cpp" },
-        root_markers = { "Package.swift", "compile_commands.json", ".git" },
-    })
-
-    -- Relax TypeScript checking for files outside a tsconfig/jsconfig project.
-    -- A project's own compiler options still take precedence.
-    vim.lsp.config("vtsls", {
-        settings = {
-            ["js/ts"] = {
-                implicitProjectConfig = {
-                    strict = false,
-                },
-            },
-        },
-    })
-
-    vim.lsp.config("lua_ls", {
-        settings = {
-            Lua = {
-                runtime = {
-                    version = 'LuaJIT',
-                },
-                diagnostics = {
-                    globals = { 'vim' },
-                },
-                workspace = {
-                    library = vim.api.nvim_get_runtime_file("", true),
-                    checkThirdParty = false,
-                },
-                telemetry = {
-                    enable = false,
-                },
-            },
-        },
-    })
-
-    vim.api.nvim_create_autocmd("LspAttach", {
-        group = vim.api.nvim_create_augroup("user.lsp", {}),
-        callback = function(args)
-            local format_on_save = { "eslint", "gopls", "lua_ls" }
-            local client = vim.lsp.get_client_by_id(args.data.client_id)
-            if not client then
-                return
-            end
-
-            client.server_capabilities.semanticTokensProvider = nil
-
-            if client.name == "gopls" then
-                local locations = require("lsp_locations")
-                if client:supports_method("textDocument/definition") then
-                    vim.keymap.set("n", "gd", locations.definition, {
-                        buffer = args.buf,
-                        desc = "Go to non-generated definition",
-                    })
-                end
-                if client:supports_method("textDocument/implementation") then
-                    vim.keymap.set("n", "gri", locations.implementation, {
-                        buffer = args.buf,
-                        desc = "Go to non-generated implementation",
-                    })
-                end
-            end
-
-            for _, lsp in ipairs(format_on_save) do
-                if lsp == client.name and client:supports_method("textDocument/formatting") then
-                    local format_autocmd = vim.api.nvim_create_autocmd("BufWritePre", {
-                        group = format_group,
-                        buffer = args.buf,
-                        callback = function()
-                            vim.lsp.buf.format({ bufnr = args.buf, id = client.id, timeout_ms = 1000 })
-                        end,
-                    })
-                    format_autocmds[args.buf] = format_autocmds[args.buf] or {}
-                    format_autocmds[args.buf][client.id] = format_autocmd
-                end
-            end
-            if client:supports_method("textDocument/completion") then
-                vim.lsp.completion.enable(true, client.id, args.buf, { autotrigger = false })
-            end
-        end,
-    })
-
-    vim.api.nvim_create_autocmd("LspDetach", {
-        callback = function(args)
-            local buffer_autocmds = format_autocmds[args.buf]
-            if not buffer_autocmds then
-                return
-            end
-
-            local format_autocmd = buffer_autocmds[args.data.client_id]
-            if not format_autocmd then
-                return
-            end
-
-            pcall(vim.api.nvim_del_autocmd, format_autocmd)
-            buffer_autocmds[args.data.client_id] = nil
-            if next(buffer_autocmds) == nil then
-                format_autocmds[args.buf] = nil
-            end
-        end,
-    })
+      pcall(vim.api.nvim_del_autocmd, format_autocmd)
+      buffer_autocmds[args.data.client_id] = nil
+      if next(buffer_autocmds) == nil then
+        format_autocmds[args.buf] = nil
+      end
+    end,
+  })
 end
 
 return M

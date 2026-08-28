@@ -2,11 +2,10 @@
 set -euo pipefail
 
 DRY_RUN=0
-SKIP_PI=0
 
 usage() {
   cat <<'USAGE'
-Usage: setup.sh [--dry-run] [--skip-pi]
+Usage: setup.sh [--dry-run]
 
 Symlink dotfiles from this repository into $HOME.
 Existing files/directories are moved to ~/.dotfiles-backup/<timestamp>/.
@@ -16,7 +15,6 @@ USAGE
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --dry-run) DRY_RUN=1 ;;
-    --skip-pi) SKIP_PI=1 ;;
     -h|--help) usage; exit 0 ;;
     *) echo "Unknown option: $1" >&2; usage; exit 2 ;;
   esac
@@ -59,7 +57,7 @@ link_codex() {
   # as a link without following it, so its runtime data is never moved into Git.
   if [[ -L "$target" || ( -e "$target" && ! -d "$target" ) ]]; then
     target_will_be_replaced=1
-    backup_target="$BACKUP_DIR/${target#$HOME/}"
+    backup_target="$BACKUP_DIR/${target#"$HOME"/}"
     echo "backup: $target -> $backup_target"
     run mkdir -p "$(dirname "$backup_target")"
     run mv "$target" "$backup_target"
@@ -85,7 +83,7 @@ link_codex() {
     fi
 
     if [[ -e "$target_entry" || -L "$target_entry" ]]; then
-      backup_target="$BACKUP_DIR/${target_entry#$HOME/}"
+      backup_target="$BACKUP_DIR/${target_entry#"$HOME"/}"
       echo "backup: $target_entry -> $backup_target"
       run mkdir -p "$(dirname "$backup_target")"
       run mv "$target_entry" "$backup_target"
@@ -118,7 +116,7 @@ link_one() {
   run mkdir -p "$(dirname "$target")"
 
   if [[ -e "$target" || -L "$target" ]]; then
-    local backup_target="$BACKUP_DIR/${target#$HOME/}"
+    local backup_target="$BACKUP_DIR/${target#"$HOME"/}"
     echo "backup: $target -> $backup_target"
     run mkdir -p "$(dirname "$backup_target")"
     run mv "$target" "$backup_target"
@@ -169,10 +167,6 @@ if [[ -n "$SUBLIME_USER_DIR" ]]; then
   LINKS+=(".config/sublime-text/Packages/User:$SUBLIME_USER_DIR")
 else
   echo "skip Sublime Text config: unsupported platform $(uname -s)"
-fi
-
-if [[ "$SKIP_PI" != 1 ]]; then
-  LINKS+=(".pi:$HOME/.pi")
 fi
 
 link_codex

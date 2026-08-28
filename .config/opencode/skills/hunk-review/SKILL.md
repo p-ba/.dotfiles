@@ -1,11 +1,16 @@
 ---
 name: hunk-review
-description: Interacts with live Hunk diff review sessions via CLI. Inspects review focus, navigates files and hunks, reloads session contents, and adds inline review comments. Use when the user has a Hunk session running or wants to review diffs interactively.
+description:
+  Interacts with live Hunk diff review sessions via CLI. Inspects review focus, navigates files and hunks, reloads
+  session contents, and adds inline review comments. Use when the user has a Hunk session running or wants to review
+  diffs interactively.
 ---
 
 # Hunk Review
 
-Hunk is an interactive terminal diff viewer. The TUI is for the user -- do NOT run `hunk diff`, `hunk show`, or other interactive commands directly. Use `hunk session *` CLI commands to inspect and control live sessions through the local daemon.
+Hunk is an interactive terminal diff viewer. The TUI is for the user -- do NOT run `hunk diff`, `hunk show`, or other
+interactive commands directly. Use `hunk session *` CLI commands to inspect and control live sessions through the local
+daemon.
 
 If no session exists, ask the user to launch Hunk in their terminal first.
 
@@ -36,7 +41,9 @@ Most session commands accept:
 - `--session-path <path>` -- match the live Hunk window by its current working directory
 - `--source <path>` -- load the replacement `diff` / `show` command from a different directory
 
-Use `--source` only for advanced reloads where the live session you want to control is not already associated with the checkout you want to load next. For a normal worktree session, prefer selecting it directly with `--repo /path/to/worktree`.
+Use `--source` only for advanced reloads where the live session you want to control is not already associated with the
+checkout you want to load next. For a normal worktree session, prefer selecting it directly with
+`--repo /path/to/worktree`.
 
 ## Commands
 
@@ -51,7 +58,8 @@ hunk session review (--repo . | <id>) [--json] [--include-patch]
 
 - `get` shows the session `Path`, `Repo`, and `Source`, which helps when choosing between `--repo` and `--session-path`
 - `Repo` is what `--repo` matches; `Path` is what `--session-path` matches
-- `review --json` returns file and hunk structure by default; add `--include-patch` only when a caller truly needs raw unified diff text
+- `review --json` returns file and hunk structure by default; add `--include-patch` only when a caller truly needs raw
+  unified diff text
 
 ### Navigate
 
@@ -90,7 +98,8 @@ hunk session reload --session-path /path/to/live-window --source /path/to/other-
 - Always include `--` before the nested Hunk command
 - `--repo` or `<session-id>` usually selects the session you want
 - `--source` is advanced: it does not select the session; it only changes where the replacement review command runs
-- If the live session is already showing the target worktree, prefer `hunk session reload --repo /path/to/worktree -- diff`
+- If the live session is already showing the target worktree, prefer
+  `hunk session reload --repo /path/to/worktree -- diff`
 - `--session-path` targets the live window when you need to keep session selection separate from reload source
 
 ### Comments
@@ -103,10 +112,12 @@ hunk session comment rm --repo . <comment-id>
 hunk session comment clear --repo . --yes [--file README.md]
 ```
 
-- `comment list --type user` shows human-authored inline notes; without `--type`, `comment list` preserves the legacy live-agent-comment view
+- `comment list --type user` shows human-authored inline notes; without `--type`, `comment list` preserves the legacy
+  live-agent-comment view
 - `comment add` is best for one note; `comment apply` is best when an agent already has several notes ready
 - `comment add` requires `--file`, `--summary`, and exactly one of `--old-line` or `--new-line`
-- `comment apply` payload items require `filePath`, `summary`, and exactly one target such as `hunk`, `hunkNumber`, `oldLine`, or `newLine`
+- `comment apply` payload items require `filePath`, `summary`, and exactly one target such as `hunk`, `hunkNumber`,
+  `oldLine`, or `newLine`
 - `comment apply` reads a JSON batch from stdin and validates the full batch before mutating the live session
 - Pass `--focus` when you want to jump to the new note or the first note in a batch
 - `comment list` and `comment clear` accept optional `--file`
@@ -114,7 +125,8 @@ hunk session comment clear --repo . --yes [--file README.md]
 
 ## New files in working-tree reviews
 
-`hunk diff` includes untracked files by default. If the user wants tracked changes only, reload with `--exclude-untracked`:
+`hunk diff` includes untracked files by default. If the user wants tracked changes only, reload with
+`--exclude-untracked`:
 
 ```bash
 hunk session reload --repo . -- diff --exclude-untracked
@@ -122,7 +134,10 @@ hunk session reload --repo . -- diff --exclude-untracked
 
 ## Guiding a review
 
-The user may ask you to walk them through a changeset or review code using Hunk. Start with `hunk session review --json` to understand the file/hunk structure without inflating agent context, then use `--include-patch` only for the files you truly need to read in raw diff form. Use `context` and `navigate` to line up the user's current view before adding comments.
+The user may ask you to walk them through a changeset or review code using Hunk. Start with `hunk session review --json`
+to understand the file/hunk structure without inflating agent context, then use `--include-patch` only for the files you
+truly need to read in raw diff form. Use `context` and `navigate` to line up the user's current view before adding
+comments.
 
 Your role is to narrate: steer the user's view to what matters and leave comments that explain what they're looking at.
 
@@ -145,10 +160,13 @@ Guidelines:
 
 ## Common errors
 
-- **"No visible diff file matches ..."** -- the file is not in the loaded review. Check `context`, then `reload` if needed.
-- **"No active Hunk sessions"** -- if Hunk is visibly running, localhost may be blocked by the agent sandbox; retry with network/sandbox escalation. Otherwise ask the user to open Hunk.
+- **"No visible diff file matches ..."** -- the file is not in the loaded review. Check `context`, then `reload` if
+  needed.
+- **"No active Hunk sessions"** -- if Hunk is visibly running, localhost may be blocked by the agent sandbox; retry with
+  network/sandbox escalation. Otherwise ask the user to open Hunk.
 - **"Multiple active sessions match"** -- pass `<session-id>` explicitly.
-- **"No active Hunk session matches session path ..."** -- for advanced split-path reloads, verify the live window `Path` via `hunk session get` or `list`, then use `--session-path`.
+- **"No active Hunk session matches session path ..."** -- for advanced split-path reloads, verify the live window
+  `Path` via `hunk session get` or `list`, then use `--session-path`.
 - **"Pass the replacement Hunk command after `--`"** -- include `--` before the nested `diff` / `show` command.
 - **"Pass --stdin to read batch comments from stdin JSON."** -- `comment apply` only reads its batch payload from stdin.
 - **"Specify exactly one navigation target"** -- pick one of `--hunk`, `--old-line`, or `--new-line`.
