@@ -36,6 +36,9 @@ node_modules/
 !.codex/agents/
 .codex/agents/*
 !.codex/agents/*.toml
+!.codex/rules/
+.codex/rules/*
+!.codex/rules/*.rules
 
 # Emacs runtime/build outputs; .emacs.d/.gitignore further narrows tracked files
 .emacs.d/eln-cache/

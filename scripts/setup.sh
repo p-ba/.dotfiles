@@ -48,7 +48,7 @@ link_codex() {
   local name source_entry target_entry backup_target
   local target_will_be_replaced=0
 
-  if [[ ! -f "$source/AGENTS.md" || ! -d "$source/agents" ]]; then
+  if [[ ! -f "$source/AGENTS.md" || ! -d "$source/agents" || ! -d "$source/rules" ]]; then
     echo "skip incomplete Codex source: $source" >&2
     return 0
   fi
@@ -69,7 +69,7 @@ link_codex() {
 
   run mkdir -p "$target"
 
-  for name in AGENTS.md agents; do
+  for name in AGENTS.md agents rules; do
     source_entry="$source/$name"
     target_entry="$target/$name"
 
@@ -96,7 +96,7 @@ link_codex() {
   done
 
   # Codex owns ~/.codex/config.toml as local runtime state; the dotfiles repo
-  # only manages durable guidance (AGENTS.md) and custom agents.
+  # only manages durable guidance (AGENTS.md), custom agents, and command rules.
   echo "ok: Codex config stays local: $target/config.toml"
 }
 
