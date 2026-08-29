@@ -3,18 +3,22 @@
 Delegate bounded work when context isolation, independent judgment, or parallel speed justifies the overhead. Do not
 delegate micro-tasks or duplicate assigned work.
 
-The primary thread owns requirements, approvals, decomposition, cross-lane decisions, final verification, and the final
-response. Keep its direct work to low-output triage, integration, and small decisive checks. Delegate broad searches,
+The primary thread and any selected `lead` follow this delegation, routing, execution, and integration workflow. The
+primary thread owns requirements, approvals, scope expansion, top-level and cross-lead decisions, final verification,
+and the final response; a lead owns decisions within its assigned bounded outcome. Keep their direct work to
+requirements and decomposition, low-output triage, integration, and small decisive checks. Delegate broad searches,
 multi-file investigation, large reviews, noisy tests or logs, and repeated diagnostics.
 
-Only the primary thread spawns agents by default. A `lead` may spawn one specialist layer only when its brief explicitly
-allows it; other agents must not spawn.
+The primary thread may spawn specialists as needed. A selected `lead` must spawn at least one specialist and may create
+only one specialist layer; its children may not spawn. Selecting `lead` grants this nesting authority without requiring
+a separate phrase in its brief. When subagent coordination is unnecessary, use direct specialist roles rather than a
+lead.
 
 ## Routing
 
 Use the configured roles without model or reasoning overrides:
 
-- `lead`: bounded, cross-cutting coordination.
+- `lead`: bounded, cross-cutting coordination that requires subagents.
 - `worker`: specified implementation and fixes.
 - `explorer`: targeted read-only discovery.
 - `reviewer`: independent correctness, security, and regression review.
@@ -27,7 +31,8 @@ reduce scope or report the limitation.
 ## Execution
 
 - Give fresh agents a self-contained brief: objective and deliverable; scope, ownership, and exclusions; acceptance and
-  validation; relevant constraints or snapshot; and edit or nesting authority.
+  validation; relevant constraints or snapshot; edit authority; and task-specific nesting constraints beyond role
+  defaults.
 - Normally pass no inherited turns. Pass limited recent context only when restating it would be less reliable; use full
   history only when continuity is essential.
 - Parallelize only stable, independent lanes. Usually run one or two children; use three only when coordination cost is

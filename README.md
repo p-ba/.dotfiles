@@ -37,10 +37,11 @@ Vim config is intentionally not included.
   Migrate runtime state from the old referent before running setup on a legacy installation; the 2026-08-14 upgrade of
   this repository performed that move in place. Existing local `AGENTS.md`, `agents/`, or `rules/` entries are backed up
   individually before the managed links are installed.
-- The local Codex config uses Sol for the primary session. Custom roles use Sol for context-isolated lead work and
-  independent review, Terra for default and implementation work, Codex Spark for focused read-only exploration, and Luna
-  for validation. Shell aliases keep `codex` on its normal approval safeguards, `c` is the same command, and `ca` opts
-  into automatic approval review. Start a new Codex session after changing guidance or roles.
+- The local Codex config uses Sol for the primary session. The lead role inherits its parent session's model and
+  reasoning effort; the reviewer uses Sol/high, default and implementation work use Terra, and focused read-only
+  exploration and validation use Luna/medium. Shell aliases keep `codex` on its normal approval safeguards, `c` is the
+  same command, and `ca` opts into automatic approval review. Start a new Codex session after changing guidance or
+  roles.
 - Git identity and other machine-specific Git settings live in `~/.gitconfig.local`, which is included by the tracked
   `.gitconfig` but remains outside this repository. On first setup, the script prompts for your name and email and
   creates this file outside the repository.
