@@ -22,6 +22,24 @@
             {"key": "auto_complete_visible", "operand": false}
         ]
     },
+    // Swift's syntax definition already exposes classes and structs to
+    // Sublime's native symbol index, so definition lookup does not need LSP.
+    {
+        "keys": ["f12"],
+        "command": "goto_definition",
+        "context": [
+            {"key": "selector", "operator": "equal", "operand": "source.swift"},
+            {"key": "auto_complete_visible", "operand": false}
+        ]
+    },
+    {
+        "keys": ["ctrl+]"],
+        "command": "goto_definition",
+        "context": [
+            {"key": "selector", "operator": "equal", "operand": "source.swift"},
+            {"key": "auto_complete_visible", "operand": false}
+        ]
+    },
     {
         "keys": ["f2"],
         "command": "lsp_symbol_rename",
