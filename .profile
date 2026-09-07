@@ -1,3 +1,7 @@
+# The following lines were added by Docker Desktop to add commands to your PATH.
+export PATH="$PATH:/Users/pavel/.docker/bin"
+# End of Docker Desktop section.
+
 PROFILE_LOADED=1
 export HOMEBREW_PREFIX="/opt/homebrew"
 export HOMEBREW_CELLAR="$HOMEBREW_PREFIX/Cellar"
@@ -64,4 +68,9 @@ fi
 
 if [ -r "$HOME/.cargo/env" ]; then
     . "$HOME/.cargo/env"
+fi
+
+# Load local environment settings and credentials when available.
+if [ -r "$HOME/.profile.local" ]; then
+    . "$HOME/.profile.local"
 fi

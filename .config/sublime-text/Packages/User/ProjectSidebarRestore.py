@@ -1,4 +1,4 @@
-"""Restore sidebar context for folders that look like source projects."""
+"""Open detected source project folders from the Command Palette."""
 
 import os
 
@@ -12,8 +12,6 @@ _FALLBACK_MARKERS = frozenset((
     "go.mod", "composer.json", "Gemfile", "mix.exs", "pom.xml",
     "build.gradle", "build.gradle.kts",
 ))
-_handled_windows = {}
-_window_tokens = {}
 
 
 def _normal_path(path):
@@ -145,24 +143,12 @@ def _add_roots_to_unnamed_window(window, roots):
         window.set_project_data(project_data)
 
 
-def _token_for(window):
-    return _window_tokens.setdefault(window.id(), object())
-
-
-def _schedule_restore(window, view_id=None, delay=0):
-    """Discover roots asynchronously, then commit any UI changes on main thread."""
-    sublime.set_timeout(lambda: _begin_restore(window, view_id), delay)
-
-
-def _begin_restore(window, view_id):
+def _begin_restore(window):
     """Capture window state on the main thread before async filesystem work."""
     if not window or not window.is_valid():
         return
-    token = _token_for(window)
     project_file = window.project_file_name()
     view = window.active_view()
-    if view_id is not None and (not view or view.id() != view_id):
-        return
     captured_view_id = view.id() if view else None
     file_name = view.file_name() if view else None
     folders = window.folders()
@@ -173,15 +159,15 @@ def _begin_restore(window, view_id):
         if roots:
             sublime.set_timeout(
                 lambda: _commit_restore(
-                    window, token, project_file, roots, captured_view_id,
+                    window, project_file, roots, captured_view_id,
                     folder_state), 0)
 
     sublime.set_timeout_async(discover, 0)
 
 
-def _commit_restore(window, token, project_file, roots, view_id, folder_state):
+def _commit_restore(window, project_file, roots, view_id, folder_state):
     """Apply state and UI changes only after main-thread identity checks."""
-    if (not window.is_valid() or _window_tokens.get(window.id()) is not token or
+    if (not window.is_valid() or
             window.project_file_name() != project_file):
         return
     view = window.active_view()
@@ -194,54 +180,14 @@ def _commit_restore(window, token, project_file, roots, view_id, folder_state):
     # This check is intentionally repeated at commit time: named project files
     # must never be rewritten, including if a project was named during discovery.
     _add_roots_to_unnamed_window(window, roots)
-    window_id = window.id()
-    previous = _handled_windows.get(window_id)
-    if not previous or previous["token"] is not token:
-        previous = {"token": token, "initialized": False, "revealed": None}
-        _handled_windows[window_id] = previous
-
-    if not previous["initialized"]:
-        window.set_sidebar_visible(True)
-        previous["initialized"] = True
-
-    previous["roots"] = tuple(sorted(_normal_path(root) for root in roots))
+    window.set_sidebar_visible(True)
     file_name = view.file_name() if view else None
-    reveal_file = file_name if file_name and any(_is_within(file_name, root) for root in roots) else None
-    if reveal_file and previous["revealed"] != _normal_path(reveal_file) and window.is_sidebar_visible():
+    if file_name and any(_is_within(file_name, root) for root in roots):
         window.run_command("reveal_in_side_bar")
-        previous["revealed"] = _normal_path(reveal_file)
 
 
-def _schedule_retries(window):
-    _schedule_restore(window)
-    _schedule_restore(window, delay=250)
-    _schedule_restore(window, delay=1000)
+class OpenDetectedProjectCommand(sublime_plugin.WindowCommand):
+    """Show detected project roots and reveal the active file in the sidebar."""
 
-
-def plugin_loaded():
-    """Handle windows restored before this plugin was loaded."""
-    for window in sublime.windows():
-        _schedule_retries(window)
-
-
-class ProjectSidebarRestoreListener(sublime_plugin.EventListener):
-    def on_new_window_async(self, window):
-        _schedule_retries(window)
-
-    def on_new_project_async(self, window):
-        _schedule_retries(window)
-
-    def on_load_project_async(self, window):
-        _schedule_retries(window)
-
-    def on_activated_async(self, view):
-        window = view.window()
-        active_view = window.active_view() if window and window.is_valid() else None
-        if not active_view or active_view.id() != view.id():
-            return
-        _schedule_restore(window, view.id())
-
-    def on_pre_close_window(self, window):
-        window_id = window.id()
-        _handled_windows.pop(window_id, None)
-        _window_tokens.pop(window_id, None)
+    def run(self):
+        _begin_restore(self.window)

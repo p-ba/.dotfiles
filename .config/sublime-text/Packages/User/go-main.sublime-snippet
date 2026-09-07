@@ -1,0 +1,12 @@
+<snippet>
+	<content><![CDATA[
+package main
+
+func main() {
+	$0
+}
+]]></content>
+	<tabTrigger>main</tabTrigger>
+	<scope>source.go</scope>
+	<description>Go: Main package and entry point</description>
+</snippet>

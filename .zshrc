@@ -57,7 +57,12 @@ bindkey '^F' fzf_tmux
 
 alias oc="opencode2 --yolo"
 alias copilot="copilot --yolo"
-alias codex="codex --yolo"
+# Use ChatGPT's bundled CLI so app updates also update terminal Codex.
+if [[ -x /Applications/ChatGPT.app/Contents/Resources/codex ]]; then
+    alias codex='/Applications/ChatGPT.app/Contents/Resources/codex --yolo'
+else
+    alias codex='codex --yolo'
+fi
 alias dc="docker compose"
 alias de="docker exec -it"
 alias tree="tree --dirsfirst"

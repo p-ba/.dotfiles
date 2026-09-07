@@ -1,0 +1,10 @@
+<snippet>
+	<content><![CDATA[
+defer func() {
+	$0
+}()
+]]></content>
+	<tabTrigger>defer</tabTrigger>
+	<scope>source.go</scope>
+	<description>Go: Deferred closure</description>
+</snippet>

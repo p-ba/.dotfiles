@@ -1,0 +1,11 @@
+<snippet>
+	<content><![CDATA[
+if err != nil {
+	return ${1:err}
+}
+$0
+]]></content>
+	<tabTrigger>err</tabTrigger>
+	<scope>source.go</scope>
+	<description>Go: Check and return error</description>
+</snippet>
