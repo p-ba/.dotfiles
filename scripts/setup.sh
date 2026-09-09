@@ -26,9 +26,15 @@ DOTFILES_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 BACKUP_DIR="$HOME/.dotfiles-backup/$(date +%Y%m%d-%H%M%S)"
 
 case "$(uname -s)" in
-  Darwin) SUBLIME_USER_DIR="$HOME/Library/Application Support/Sublime Text/Packages/User" ;;
-  Linux) SUBLIME_USER_DIR="$HOME/.config/sublime-text/Packages/User" ;;
-  *) SUBLIME_USER_DIR="" ;;
+  Darwin)
+    SUBLIME_USER_DIR="$HOME/Library/Application Support/Sublime Text/Packages/User"
+    GHOSTTY_CONFIG="$HOME/Library/Application Support/com.mitchellh.ghostty/config"
+    ;;
+  Linux)
+    SUBLIME_USER_DIR="$HOME/.config/sublime-text/Packages/User"
+    GHOSTTY_CONFIG="${XDG_CONFIG_HOME:-$HOME/.config}/ghostty/config"
+    ;;
+  *) SUBLIME_USER_DIR=""; GHOSTTY_CONFIG="" ;;
 esac
 
 run() {
@@ -167,6 +173,12 @@ if [[ -n "$SUBLIME_USER_DIR" ]]; then
   LINKS+=(".config/sublime-text/Packages/User:$SUBLIME_USER_DIR")
 else
   echo "skip Sublime Text config: unsupported platform $(uname -s)"
+fi
+
+if [[ -n "$GHOSTTY_CONFIG" ]]; then
+  LINKS+=(".config/ghostty/config:$GHOSTTY_CONFIG")
+else
+  echo "skip Ghostty config: unsupported platform $(uname -s)"
 fi
 
 link_codex

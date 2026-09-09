@@ -1,0 +1,6 @@
+font-family = "Maple Mono NF"
+font-size = 16
+font-feature = -liga
+font-thicken = true
+background-opacity = 0.97
+adjust-cell-height = 20%

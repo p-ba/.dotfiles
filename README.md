@@ -14,6 +14,8 @@ git clone git@github.com:p-ba/.dotfiles.git ~/.dotfiles
 This repo mirrors `$HOME` where practical:
 
 - `.config/nvim` -> `~/.config/nvim`
+- `.config/ghostty/config` -> `~/Library/Application Support/com.mitchellh.ghostty/config` (macOS), or
+  `${XDG_CONFIG_HOME:-~/.config}/ghostty/config` (Linux)
 - `.codex/AGENTS.md` -> `~/.codex/AGENTS.md`
 - `.codex/agents` -> `~/.codex/agents`
 - `.codex/rules` -> `~/.codex/rules`

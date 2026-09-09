@@ -103,9 +103,11 @@ __docker_stop_rm() {
 }
 alias dcsr="__docker_stop_rm"
 
-if [ -f ~/.__projects.sh ]; then
-    source ~/.__projects.sh
-fi
+# Stop all SSH dynamic-forwarding tunnels.
+sshKillAllTunnel() {
+    ps -ax | grep 'ssh -D' | grep -v 'grep ' | awk -F " " '{print $1}' | xargs -t --no-run-if-empty kill
+}
+alias ssh_kill_all_tunnel='sshKillAllTunnel'
 
 # bun completion: autoload on first use instead of parsing the generated file at startup
 if [ -s "$HOME/.bun/_bun" ]; then

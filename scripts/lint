@@ -96,7 +96,7 @@ while IFS= read -r -d '' file; do line_checked_files+=("$file"); done < <(
     '*.sublime-color-scheme' '*.sublime-commands' '*.sublime-completions' '*.sublime-keymap' \
     '*.sublime-macro' '*.sublime-menu' '*.sublime-project' '*.sublime-settings' '*.sublime-snippet' \
     '*.sublime-theme' '*.toml' '*.ts' '*.yaml' '*.yml' '*.zsh' \
-    '.bashrc' '.config/sublime-text/Packages/User/.neovintageousrc' '.editorconfig' '.gitconfig' \
+    '.bashrc' '.config/ghostty/config' '.config/sublime-text/Packages/User/.neovintageousrc' '.editorconfig' '.gitconfig' \
     '.gitconfig.local.example' '.gitignore' '.profile' '.ripgreprc' '.shellcheckrc' '.tmux.conf' \
     '.zshenv' '.zshrc' '*/.gitignore' 'scripts/fzf_tmux'
 )
