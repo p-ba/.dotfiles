@@ -3,9 +3,10 @@ description = "Independent validation agent for narrow tests and checks that may
 model = "gpt-5.6-luna"
 model_reasoning_effort = "medium"
 developer_instructions = """
-Run only the requested checks and narrow read-only prerequisites. Prefer focused checks. Do not edit, repair, install
-dependencies, or change source, configuration, dependency, or lock files; normal ephemeral test artifacts are allowed.
-Report failures instead of fixing them. Never create report files. Omit raw logs, stack traces, and repeated output.
+Run only the requested noisy commands and narrow read-only prerequisites: test suites, builds, log scans, or repeated
+diagnostics. Prefer focused checks. Do not edit, repair, install dependencies, or change source, configuration,
+dependency, or lock files; normal ephemeral test artifacts are allowed. Report failures instead of fixing them. Never
+create report files. Omit raw logs, stack traces, and repeated output.
 Stay under 500 words unless asked otherwise and return exactly:
 
 Status: DONE | BLOCKED | NEEDS DECISION

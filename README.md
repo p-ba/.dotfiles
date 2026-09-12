@@ -19,6 +19,10 @@ This repo mirrors `$HOME` where practical:
 - `.codex/AGENTS.md` -> `~/.codex/AGENTS.md`
 - `.codex/agents` -> `~/.codex/agents`
 - `.codex/rules` -> `~/.codex/rules`
+- `.claude/settings.json` -> `~/.claude/settings.json`
+- `.claude/CLAUDE.md` -> `~/.claude/CLAUDE.md`
+- `.claude/agents` -> `~/.claude/agents`
+- `.claude/hooks` -> `~/.claude/hooks`
 - `.config/opencode` -> `~/.config/opencode`
 - `.config/sublime-text/Packages/User` -> `~/Library/Application Support/Sublime Text/Packages/User` (macOS) or
   `~/.config/sublime-text/Packages/User` (Linux)
@@ -39,6 +43,20 @@ Vim config is intentionally not included.
   Migrate runtime state from the old referent before running setup on a legacy installation; the 2026-08-14 upgrade of
   this repository performed that move in place. Existing local `AGENTS.md`, `agents/`, or `rules/` entries are backed up
   individually before the managed links are installed.
+- `~/.claude` is likewise a real, local Claude Code runtime directory (sessions, projects, plugins, caches, history).
+  Setup links only the durable user `settings.json`, global guidance (`CLAUDE.md`), custom agents (`agents/`), and hook
+  scripts (`hooks/`) from Git; missing sources are skipped. Project-level `.claude/settings.local.json` files stay
+  ignored and are unrelated to this user-level link.
+- Claude Code subagents run on Sonnet (`CLAUDE_CODE_SUBAGENT_MODEL`). The `worker` agent makes every file edit and a
+  PreToolUse hook denies `Edit`/`Write` from any other caller, including the main session; the `reviewer` agent inherits
+  the session model and reviews each worker result; `general-purpose` is pinned to Opus. Set `CLAUDE_ALLOW_MAIN_EDITS=1`
+  when starting Claude to lift the hook for a session. Edits made through `Bash` are not intercepted.
+- Claude routes unbounded main-session reads of regular text over 350 lines to local `Explore`; setup already links the
+  hook, so start a fresh session and use `/hooks` to inspect it. `CLAUDE_BULK_READ_MIN_LINES` sets a positive threshold,
+  while `CLAUDE_ALLOW_LARGE_READS=1` opts out for a session; explicit `Read` limits at or below that threshold and all
+  subagents are exempt. It checks only simple literal Bash reads; complex shell is passed through. Scanning stops at
+  8 MiB and fails open. The existing `python3` hook runs locally without model calls; Claude and its subagents still use
+  Anthropic inference. Context and total-token savings are unmeasured, so compare them in ordinary use.
 - The local Codex config uses Sol for the primary session. The lead role inherits its parent session's model and
   reasoning effort; the reviewer uses Sol/high, default and implementation work use Terra, and focused read-only
   exploration and validation use Luna/medium. Shell aliases keep `codex` on its normal approval safeguards, `c` is the

@@ -1,13 +1,15 @@
 # Delegation policy
 
 Delegate bounded work when context isolation, independent judgment, or parallel speed justifies the overhead. Do not
-delegate micro-tasks or duplicate assigned work.
+delegate micro-tasks or duplicate assigned work, except for the required worker implementation and reviewer acceptance
+workflow.
 
 The primary thread and any selected `lead` follow this delegation, routing, execution, and integration workflow. The
 primary thread owns requirements, approvals, scope expansion, top-level and cross-lead decisions, final verification,
 and the final response; a lead owns decisions within its assigned bounded outcome. Keep their direct work to
-requirements and decomposition, low-output triage, integration, and small decisive checks. Delegate broad searches,
-multi-file investigation, large reviews, noisy tests or logs, and repeated diagnostics.
+requirements and decomposition, low-output triage, integration, and small decisive checks. The `worker` owns every
+file edit. Delegate broad searches, multi-file investigation, large reviews, noisy tests or logs, and repeated
+diagnostics.
 
 The primary thread may spawn specialists as needed. A selected `lead` must spawn at least one specialist and may create
 only one specialist layer; its children may not spawn. Selecting `lead` grants this nesting authority without requiring
@@ -28,11 +30,19 @@ Use the configured roles without model or reasoning overrides:
 If a role is unavailable, substitute only when another configured role still meets the acceptance criteria; otherwise
 reduce scope or report the limitation.
 
+Route unbounded regular-text reads over 350 lines, broad searches that need more than two searches or files, and
+multi-file investigation to `explorer`; give it a focused question and request concise path:line evidence. Use
+`validator` for noisy commands, including test suites, builds, log scans, and repeated diagnostics. This routing is
+workflow guidance, not enforcement; do not bypass it through shell commands.
+
 ## Execution
 
 - Give fresh agents a self-contained brief: objective and deliverable; scope, ownership, and exclusions; acceptance and
   validation; relevant constraints or snapshot; edit authority; and task-specific nesting constraints beyond role
   defaults.
+- Assign every implementation and corrective edit to `worker`. Review every completed worker result with a fresh
+  `reviewer` before accepting it; provide the original brief, base commit, and changed paths rather than relying on the
+  worker summary.
 - Normally pass no inherited turns. Pass limited recent context only when restating it would be less reliable; use full
   history only when continuity is essential.
 - Parallelize only stable, independent lanes. Usually run one or two children; use three only when coordination cost is
@@ -46,5 +56,6 @@ reduce scope or report the limitation.
 ## Integration
 
 Require decision-relevant evidence, not raw transcripts or full diffs. Verify with the agent verdict plus targeted
-inspection of the highest-risk changed state; do not replay completed work. Route fixes and rechecks to the lane owner,
-then report the integrated result.
+inspection of the highest-risk changed state; do not replay completed work. Route reviewer findings and rechecks to
+the same worker, rather than a new one, then report the integrated result. After two correction cycles, report the
+blocker.

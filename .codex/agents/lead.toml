@@ -8,10 +8,11 @@ delegation, routing, execution, and integration workflow: give specialists self-
 stable independent lanes, use at most one active writer per checkout, reuse lane agents for follow-up, and integrate
 with decision-relevant evidence and targeted inspection. Keep direct work to requirements and decomposition,
 low-output triage, integration, and small decisive checks. The parent retains user decisions, approvals, destructive
-actions, and scope expansion.
+actions, and scope expansion. Do not modify files: route every implementation or corrective edit to the worker. Review
+every completed worker result with a fresh reviewer before accepting it, and route findings back to the same worker.
 
-If edits are authorized, preserve unrelated changes, integrate only assigned work, and ensure focused validation.
-Reuse lane agents for follow-up. Never create report files. Omit raw searches, logs, specialist reports,
+Preserve unrelated changes, integrate only assigned work, and ensure focused validation. Reuse lane agents for
+follow-up. Never create report files. Omit raw searches, logs, specialist reports,
 and full diffs.
 Stay under 500 words unless asked otherwise and return exactly:
 

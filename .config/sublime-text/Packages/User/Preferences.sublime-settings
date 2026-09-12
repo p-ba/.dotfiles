@@ -23,6 +23,7 @@
 	"color_scheme": "Mariana.sublime-color-scheme",
 	"highlight_line": true,
 	"highlight_modified_tabs": true,
+	"trim_trailing_white_space_on_save": "all",
 	"folder_exclude_patterns": [
 		".svn",
 		".git",

@@ -18,9 +18,17 @@
 ;; (use-package php-ts-mode
 ;;   :mode (("\\.php$" . php-ts-mode)))
 
+(defun my/go-indentation-setup ()
+  "Keep Go indentation consistent with the displayed width of tabs."
+  (setq-local indent-tabs-mode t
+              tab-width 4
+              go-ts-mode-indent-offset 4))
+
 (use-package go-ts-mode
+  :ensure nil
   :defer t
-  :mode "\\.go\\'")
+  :mode "\\.go\\'"
+  :hook (go-ts-mode . my/go-indentation-setup))
 
 (use-package yaml-ts-mode
   :defer t

@@ -46,21 +46,21 @@ run() {
   fi
 }
 
-link_codex() {
-  local source="$DOTFILES_DIR/.codex"
-  local target="$HOME/.codex"
+# Link durable entries from a repository directory into a tool-owned runtime
+# directory. The runtime directory itself stays a real local directory so that
+# auth, sessions, caches, and plugins are never moved into Git.
+link_runtime_entries() {
+  local label="$1"
+  local source="$2"
+  local target="$3"
+  shift 3
   local name source_entry target_entry backup_target
   local target_will_be_replaced=0
 
-  if [[ ! -f "$source/AGENTS.md" || ! -d "$source/agents" || ! -d "$source/rules" ]]; then
-    echo "skip incomplete Codex source: $source" >&2
-    return 0
-  fi
-
   run mkdir -p "$(dirname "$target")"
 
-  # Codex owns this runtime directory. A legacy directory symlink is backed up
-  # as a link without following it, so its runtime data is never moved into Git.
+  # A legacy directory symlink is backed up as a link without following it, so
+  # its runtime data is never moved into Git.
   if [[ -L "$target" || ( -e "$target" && ! -d "$target" ) ]]; then
     target_will_be_replaced=1
     backup_target="$BACKUP_DIR/${target#"$HOME"/}"
@@ -68,14 +68,19 @@ link_codex() {
     run mkdir -p "$(dirname "$backup_target")"
     run mv "$target" "$backup_target"
   elif [[ -d "$target" ]]; then
-    echo "ok: using local Codex runtime directory: $target"
+    echo "ok: using local $label runtime directory: $target"
   fi
 
   run mkdir -p "$target"
 
-  for name in AGENTS.md agents rules; do
+  for name in "$@"; do
     source_entry="$source/$name"
     target_entry="$target/$name"
+
+    if [[ ! -e "$source_entry" && ! -L "$source_entry" ]]; then
+      echo "skip missing source: $source_entry"
+      continue
+    fi
 
     if [[ "$DRY_RUN" == 1 && "$target_will_be_replaced" == 1 ]]; then
       echo "link: $target_entry -> $source_entry"
@@ -98,10 +103,37 @@ link_codex() {
     echo "link: $target_entry -> $source_entry"
     run ln -s "$source_entry" "$target_entry"
   done
+}
+
+link_codex() {
+  local source="$DOTFILES_DIR/.codex"
+  local target="$HOME/.codex"
+
+  if [[ ! -f "$source/AGENTS.md" || ! -d "$source/agents" || ! -d "$source/rules" ]]; then
+    echo "skip incomplete Codex source: $source" >&2
+    return 0
+  fi
+
+  link_runtime_entries Codex "$source" "$target" AGENTS.md agents rules
 
   # Codex owns ~/.codex/config.toml as local runtime state; the dotfiles repo
   # only manages durable guidance (AGENTS.md), custom agents, and command rules.
   echo "ok: Codex config stays local: $target/config.toml"
+}
+
+link_claude() {
+  local source="$DOTFILES_DIR/.claude"
+  local target="$HOME/.claude"
+
+  if [[ ! -f "$source/settings.json" ]]; then
+    echo "skip incomplete Claude Code source: $source" >&2
+    return 0
+  fi
+
+  # Claude Code owns ~/.claude as its runtime directory (sessions, projects,
+  # plugins, caches, history); the dotfiles repo only manages durable user
+  # settings, global guidance (CLAUDE.md), custom agents, and hook scripts.
+  link_runtime_entries "Claude Code" "$source" "$target" settings.json CLAUDE.md agents hooks
 }
 
 link_one() {
@@ -182,6 +214,7 @@ else
 fi
 
 link_codex
+link_claude
 
 for mapping in "${LINKS[@]}"; do
   link_one "${mapping%%:*}" "${mapping#*:}"

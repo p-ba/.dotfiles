@@ -31,6 +31,17 @@ node_modules/
 .codex/rules/*
 !.codex/rules/*.rules
 
+# Claude Code local runtime state; keep only durable settings, guidance, and agents
+.claude/*
+!.claude/settings.json
+!.claude/CLAUDE.md
+!.claude/agents/
+.claude/agents/*
+!.claude/agents/*.md
+!.claude/hooks/
+.claude/hooks/*
+!.claude/hooks/*.py
+
 # Emacs runtime/build outputs; .emacs.d/.gitignore further narrows tracked files
 .emacs.d/eln-cache/
 .emacs.d/elpa/
