@@ -62,6 +62,9 @@ Vim config is intentionally not included.
   exploration and validation use Luna/medium. Shell aliases keep `codex` on its normal approval safeguards, `c` is the
   same command, and `ca` opts into automatic approval review. Start a new Codex session after changing guidance or
   roles.
+- On macOS, setup runs `scripts/macos-default-editor.sh` to make Sublime Text the Finder default for plain-text and
+  common source-code types (including `.ts`, which macOS also maps to MPEG-2 video). HTML, SVG, RTF, and CSV keep their
+  existing apps. The script can be run on its own and accepts `--dry-run`.
 - Git identity and other machine-specific Git settings live in `~/.gitconfig.local`, which is included by the tracked
   `.gitconfig` but remains outside this repository. On first setup, the script prompts for your name and email and
   creates this file outside the repository.

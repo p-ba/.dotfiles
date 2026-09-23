@@ -222,4 +222,10 @@ done
 
 bootstrap_git_identity
 
+if [[ "$(uname -s)" == Darwin ]]; then
+  default_editor_args=()
+  [[ "$DRY_RUN" == 1 ]] && default_editor_args+=(--dry-run)
+  "$SCRIPT_DIR/macos-default-editor.sh" "${default_editor_args[@]}" | grep -v '^ok: ' || true
+fi
+
 echo "Done. Dotfiles root: $DOTFILES_DIR"
