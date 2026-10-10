@@ -1,8 +1,19 @@
 setopt inc_append_history
 [ -t 0 ] && [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
-if [ ${TERM:-} = 'xterm-256color' ]; then
-    #exec tmux new -A -s home
+# Open every terminal window in tmux. Limited to real terminal apps so editor
+# terminals and scripted shells stay plain. If tmux fails we fall through to a
+# normal shell instead of losing the window.
+if [[ -o interactive && -z ${TMUX:-} && -t 0 && -t 1 ]] &&
+    [[ ${TERM_PROGRAM:-} == (ghostty|iTerm.app|Apple_Terminal) ]] &&
+    (( $+commands[tmux] )); then
+    if tmux has-session 2>/dev/null; then
+        # No target: tmux resumes the most recently used session that isn't
+        # already open in another window.
+        tmux attach && exit
+    else
+        tmux new -s home -c "$HOME" && exit
+    fi
 fi
 
 bindkey -e
