@@ -48,9 +48,11 @@ Vim config is intentionally not included.
   scripts (`hooks/`) from Git; missing sources are skipped. Project-level `.claude/settings.local.json` files stay
   ignored and are unrelated to this user-level link.
 - A Claude Code `Stop` hook (`hooks/notify-on-stop.py`) shows a desktop notification with the project name and the first
-  line of Claude's reply when the main session finishes a task: `osascript` on macOS, `notify-send` on Linux when
-  installed. Subagent and in-process teammate stops are skipped, as are turns that end while background agents or
-  workflows are still running. On macOS, allow notifications for Script Editor if none appear.
+  line of Claude's reply when the main session finishes a task. Subagent and in-process teammate stops are skipped, as
+  are turns that end while background agents or workflows are still running. On macOS, `brew install terminal-notifier`
+  and allow its notifications to make them clickable: a click brings the terminal app (Ghostty by default) forward and
+  switches the most recently used tmux client to Claude's pane. Without it, `osascript` shows a plain notification
+  (allow Script Editor's notifications if none appear); Linux uses `notify-send` when installed.
 - The local Codex config uses Sol for the primary session. The lead role inherits its parent session's model and
   reasoning effort; the reviewer uses Sol/high, default and implementation work use Terra, and focused read-only
   exploration and validation use Luna/medium. Shell aliases keep `codex` on its normal approval safeguards, `c` is the

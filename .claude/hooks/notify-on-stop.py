@@ -7,10 +7,15 @@ in-process teammate, whereas ``agent_type`` alone also appears in ``--agent``
 sessions. A turn that ends while background agents are still running is not a
 finished task either; the main session resumes when they report back and fires
 Stop again.
+
+On macOS with terminal-notifier installed, clicking the notification brings the
+terminal app forward and, inside tmux, switches the most recently used client to
+the pane Claude runs in. Otherwise the notification is informational only.
 """
 
 import json
 import os
+import shlex
 import shutil
 import subprocess
 import sys
@@ -18,6 +23,7 @@ import sys
 TITLE = "Claude Code"
 MAX_MESSAGE_CHARS = 200
 AGENT_TASK_TYPES = {"subagent", "workflow", "teammate"}
+DEFAULT_TERMINAL_BUNDLE_ID = "com.mitchellh.ghostty"
 
 
 def summary(payload: dict) -> str:
@@ -33,8 +39,40 @@ def summary(payload: dict) -> str:
     return "Task finished"
 
 
-def notify(subtitle: str, message: str) -> None:
+def tmux_focus_command() -> str | None:
+    """Return a shell command that shows this pane in the most recently used tmux client."""
+    pane = os.environ.get("TMUX_PANE")
+    socket = os.environ.get("TMUX", "").split(",")[0]
+    tmux = shutil.which("tmux")
+    if not (pane and socket and tmux):
+        return None
+    # The click handler runs outside tmux with launchd's minimal PATH, so name the binary and server explicitly.
+    return shlex.join([tmux, "-S", socket, "switch-client", "-t", pane])
+
+
+def notify_clickable(group: str, subtitle: str, message: str) -> bool:
+    notifier = shutil.which("terminal-notifier")
+    if not notifier:
+        return False
+    # Processes started from a macOS app inherit its bundle ID, and tmux sessions keep the one from the
+    # terminal that started the server.
+    terminal = os.environ.get("__CFBundleIdentifier") or DEFAULT_TERMINAL_BUNDLE_ID
+    command = [notifier, "-title", TITLE, "-subtitle", subtitle, "-group", group, "-activate", terminal]
+    focus = tmux_focus_command()
+    if focus:
+        command += ["-execute", focus]
+    # Pipe the message so a leading "-" or "[" in Claude's reply is never parsed as an option.
+    result = subprocess.run(
+        command, input=message, text=True, check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+    )
+    return result.returncode == 0
+
+
+def notify(group: str, subtitle: str, message: str) -> None:
     if sys.platform == "darwin":
+        # Fall back to a plain notification when terminal-notifier is missing or not yet allowed to post.
+        if notify_clickable(group, subtitle, message):
+            return
         # Pass text as arguments so quotes in the reply never reach AppleScript source.
         command = [
             "osascript",
@@ -70,8 +108,10 @@ def main() -> int:
     ):
         return 0
 
+    # One notification slot per Claude session, so a newer finish replaces the older banner.
+    group = f"claude-code-{payload.get('session_id') or 'session'}"
     cwd = payload.get("cwd") or os.getcwd()
-    notify(os.path.basename(os.path.normpath(cwd)), summary(payload))
+    notify(group, os.path.basename(os.path.normpath(cwd)), summary(payload))
     return 0
 
 
