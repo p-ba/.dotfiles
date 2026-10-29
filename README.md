@@ -47,16 +47,10 @@ Vim config is intentionally not included.
   Setup links only the durable user `settings.json`, global guidance (`CLAUDE.md`), custom agents (`agents/`), and hook
   scripts (`hooks/`) from Git; missing sources are skipped. Project-level `.claude/settings.local.json` files stay
   ignored and are unrelated to this user-level link.
-- Claude Code subagents run on Sonnet (`CLAUDE_CODE_SUBAGENT_MODEL`). The `worker` agent makes every file edit and a
-  PreToolUse hook denies `Edit`/`Write` from any other caller, including the main session; the `reviewer` agent inherits
-  the session model and reviews each worker result; `general-purpose` is pinned to Opus. Set `CLAUDE_ALLOW_MAIN_EDITS=1`
-  when starting Claude to lift the hook for a session. Edits made through `Bash` are not intercepted.
-- Claude routes unbounded main-session reads of regular text over 350 lines to local `Explore`; setup already links the
-  hook, so start a fresh session and use `/hooks` to inspect it. `CLAUDE_BULK_READ_MIN_LINES` sets a positive threshold,
-  while `CLAUDE_ALLOW_LARGE_READS=1` opts out for a session; explicit `Read` limits at or below that threshold and all
-  subagents are exempt. It checks only simple literal Bash reads; complex shell is passed through. Scanning stops at
-  8 MiB and fails open. The existing `python3` hook runs locally without model calls; Claude and its subagents still use
-  Anthropic inference. Context and total-token savings are unmeasured, so compare them in ordinary use.
+- A Claude Code `Stop` hook (`hooks/notify-on-stop.py`) shows a desktop notification with the project name and the first
+  line of Claude's reply when the main session finishes a task: `osascript` on macOS, `notify-send` on Linux when
+  installed. Subagent and in-process teammate stops are skipped, as are turns that end while background agents or
+  workflows are still running. On macOS, allow notifications for Script Editor if none appear.
 - The local Codex config uses Sol for the primary session. The lead role inherits its parent session's model and
   reasoning effort; the reviewer uses Sol/high, default and implementation work use Terra, and focused read-only
   exploration and validation use Luna/medium. Shell aliases keep `codex` on its normal approval safeguards, `c` is the
