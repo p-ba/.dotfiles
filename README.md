@@ -23,7 +23,6 @@ This repo mirrors `$HOME` where practical:
 - `.claude/CLAUDE.md` -> `~/.claude/CLAUDE.md`
 - `.claude/agents` -> `~/.claude/agents`
 - `.claude/hooks` -> `~/.claude/hooks`
-- `.config/opencode` -> `~/.config/opencode`
 - `.config/sublime-text/Packages/User` -> `~/Library/Application Support/Sublime Text/Packages/User` (macOS) or
   `~/.config/sublime-text/Packages/User` (Linux)
 - `.emacs.d` -> `~/.emacs.d`

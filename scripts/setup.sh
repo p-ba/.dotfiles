@@ -188,7 +188,6 @@ bootstrap_git_identity() {
 
 LINKS=(
   ".config/nvim:$HOME/.config/nvim"
-  ".config/opencode:$HOME/.config/opencode"
   ".emacs.d:$HOME/.emacs.d"
   ".tmux.conf:$HOME/.tmux.conf"
   ".tmux:$HOME/.tmux"

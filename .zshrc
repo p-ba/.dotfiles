@@ -66,7 +66,6 @@ fzf_tmux() {
 zle -N fzf_tmux
 bindkey '^F' fzf_tmux
 
-alias oc="opencode2 --yolo"
 alias copilot="copilot --yolo"
 # Use ChatGPT's bundled CLI so app updates also update terminal Codex.
 if [[ -x /Applications/ChatGPT.app/Contents/Resources/codex ]]; then
@@ -126,3 +125,6 @@ if [ -s "$HOME/.bun/_bun" ]; then
     autoload -Uz _bun 2>/dev/null
     (( $+functions[compdef] )) && compdef _bun bun
 fi
+
+# opencode
+export PATH=/Users/pavel/.opencode/bin:$PATH
