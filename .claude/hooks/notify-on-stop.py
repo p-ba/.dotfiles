@@ -6,7 +6,8 @@ guard, payloads carrying ``agent_id`` are skipped: it identifies a subagent or a
 in-process teammate, whereas ``agent_type`` alone also appears in ``--agent``
 sessions. A turn that ends while background agents are still running is not a
 finished task either; the main session resumes when they report back and fires
-Stop again.
+Stop again. Sessions run by the Claude desktop app are skipped as well, since the
+app posts its own notification when a session finishes.
 
 On macOS with terminal-notifier installed, clicking the notification brings the
 terminal app forward and, inside tmux, switches the most recently used client to
@@ -98,6 +99,9 @@ def main() -> int:
     try:
         payload = json.load(sys.stdin)
     except ValueError:
+        return 0
+    # Checked after reading stdin so Claude Code never writes the payload into a closed pipe.
+    if os.environ.get("CLAUDE_CODE_ENTRYPOINT") == "claude-desktop":
         return 0
     if not isinstance(payload, dict) or payload.get("agent_id"):
         return 0
